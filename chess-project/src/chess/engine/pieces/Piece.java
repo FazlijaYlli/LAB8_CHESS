@@ -1,18 +1,27 @@
 package chess.engine.pieces;
-import chess.PlayerColor;
 
-import java.util.ArrayList;
+import chess.PlayerColor;
 
 public abstract class Piece {
     // TODO : Compléter les attributs pour premier mouvement.
-    private PlayerColor color;
-    private int maxX;
-    private int maxY;
-    private boolean exludeZero;
+    private final PlayerColor color;
+    private final int maxX;
+    private final int maxY;
+    private final boolean exludeZero;
     // TODO : trouver meilleur nom.
-    private ArrayList<Integer> validMoveRatio;
+    private final int[] validMoveRatio;
 
-    public Piece(PlayerColor color) {
+    public Piece(PlayerColor color, int maxX, int maxY, boolean exludeZero, int[] validMoveRatio) {
         this.color = color;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.exludeZero = exludeZero;
+        this.validMoveRatio = validMoveRatio;
+    }
+
+    public void move(int x, int y) {
+        if (x == 0 && y == 0) {
+            throw new IllegalArgumentException("Not moving isn't a move!");
+        }
     }
 }
