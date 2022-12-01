@@ -43,4 +43,16 @@ public abstract class Piece {
     //          How to check if two pieces are on the same color square :
     //              -For each piece, add their x and y coordinates
     //              -If their (x+y) % 2 result is equal, they're on the same color square
+
+    //Fonctions d'une pièce :
+    //  - Pouvoir retourner les positions où elle peut se déplacer
+    //  - Pouvoir savoir s'il y a une pièce sur la case où elle se dirige
+    //	    (peu importe la couleur de la pièce)
+    //	    [retourner la pièce peu être utile]
+    //
+    //La classe Piece devrait possèder un tableau statique contenant toutes les pièces
+    //	(représente le board)
+    //La classe Piece devrait possèder un tableau statique des cases attaqués
+    //	(valeur de la case = nbBlancsQuiAttenquent * 100 + nbNoirsQuiAttaquent)
+    //      (La formule, c'est juste pour utiliser 1 seul tableau de cases attaquées)
 }
