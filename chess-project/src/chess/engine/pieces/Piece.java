@@ -8,9 +8,7 @@ import chess.engine.Position;
 import java.util.ArrayList;
 
 public abstract class Piece {
-    // TODO : Compléter les attributs pour premier mouvement.
     private final PlayerColor color;
-
     private final PieceType type;
 
     public Piece(PlayerColor color, PieceType type) {

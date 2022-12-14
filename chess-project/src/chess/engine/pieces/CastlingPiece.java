@@ -3,10 +3,10 @@ package chess.engine.pieces;
 import chess.PlayerColor;
 import chess.PieceType;
 
-public abstract class castlingPiece extends Piece {
+public abstract class CastlingPiece extends Piece {
     boolean hasMoved;
 
-    public castlingPiece(PlayerColor color, PieceType type) {
+    public CastlingPiece(PlayerColor color, PieceType type) {
         super(color, type);
     }
 }
