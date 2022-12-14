@@ -1,6 +1,7 @@
 package chess.engine.pieces;
 
 import chess.PlayerColor;
+import chess.PieceType;
 import chess.engine.MoveType;
 import chess.engine.Position;
 
@@ -9,18 +10,20 @@ import java.util.ArrayList;
 public abstract class Piece {
     // TODO : Compléter les attributs pour premier mouvement.
     private final PlayerColor color;
-    private final int maxX;
-    private final int maxY;
-    private final boolean excludeZero;
-    // TODO : trouver meilleur nom.
-    private final int[] validMoveRatio;
 
-    public Piece(PlayerColor color, int maxX, int maxY, boolean excludeZero, int[] validMoveRatio) {
+    private final PieceType type;
+
+    public Piece(PlayerColor color, PieceType type) {
         this.color = color;
-        this.maxX = maxX;
-        this.maxY = maxY;
-        this.excludeZero = excludeZero;
-        this.validMoveRatio = validMoveRatio;
+        this.type = type;
+    }
+
+    public PlayerColor getColor() {
+        return color;
+    }
+
+    public PieceType getType() {
+        return type;
     }
 
     public void move(int x, int y) {

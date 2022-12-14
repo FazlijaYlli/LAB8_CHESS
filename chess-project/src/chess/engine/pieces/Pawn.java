@@ -1,10 +1,11 @@
 package chess.engine.pieces;
 
+import chess.PieceType;
 import chess.PlayerColor;
 
 public class Pawn extends Piece{
     public Pawn(PlayerColor color) {
-        super(color, 0, 1, true, new int[]{0});
+        super(color, PieceType.PAWN);
     }
 
     //Pawn is special, maxY only applies in positives, not negatives, can't go backwards!

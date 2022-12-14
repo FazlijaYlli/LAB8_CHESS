@@ -1,10 +1,11 @@
 package chess.engine.pieces;
 
+import chess.PieceType;
 import chess.PlayerColor;
 
 public class King extends castlingPiece{
     public King(PlayerColor color) {
-        super(color, 1, 1, false, new int[]{0, 1});
+        super(color, PieceType.KING);
     }
 
     //First Move : maxX = 2, maxY = 1, excludeZero = false, validMoveRatio = {0, 1}
