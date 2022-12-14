@@ -1,6 +1,10 @@
 package chess.engine.pieces;
 
 import chess.PlayerColor;
+import chess.engine.MoveType;
+import chess.engine.Position;
+
+import java.util.ArrayList;
 
 public abstract class Piece {
     // TODO : Compléter les attributs pour premier mouvement.
@@ -24,6 +28,7 @@ public abstract class Piece {
             throw new IllegalArgumentException("Not moving isn't a move!");
         }
     }
+
 
     //When a Check occurs, only moves authorized should be :
     //  - Blocking the check with any piece (expect King obviously)
