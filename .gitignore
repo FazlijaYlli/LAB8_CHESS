@@ -25,3 +25,7 @@ hs_err_pid*
 chess-project/.idea/
 
 chess-project/out/
+
+.idea/
+
+LAB8_CHESS.iml
