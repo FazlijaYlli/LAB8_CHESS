@@ -24,4 +24,11 @@ public class Position {
         this.x = x;
         this.y = y;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this ||
+                o != null && o.getClass() == getClass() &&
+                        ((Position) o).x == this.x && ((Position) o).y == this.y;
+    }
 }

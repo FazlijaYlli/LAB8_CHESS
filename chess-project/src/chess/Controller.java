@@ -1,6 +1,11 @@
 package chess;
 
+import chess.engine.Move;
+import chess.engine.MoveType;
+import chess.engine.Position;
 import chess.engine.pieces.*;
+
+import java.util.ArrayList;
 
 public class Controller implements ChessController{
 
@@ -15,6 +20,29 @@ public class Controller implements ChessController{
 
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
+
+        if(board[fromY][fromX] == null)
+            return false;
+
+        ArrayList<Move> possibleMoves = board[fromY][fromX].getMoves();
+
+        for (Move move : possibleMoves) {
+            Position truePosition = move.getDestination();
+            truePosition.setX(truePosition.getX()+fromX);
+            truePosition.setY(truePosition.getY()+fromY);
+            if (truePosition.equals(new Position(toX,toY))){
+
+                if (move.getType() != MoveType.MOVE) {
+                    view.removePiece(toX, toY);
+                }
+
+                view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
+                view.removePiece(fromX, fromY);
+                board[toY][toX] = board[fromY][fromX];
+                board[fromY][fromX] = null;
+                return true;
+            }
+        }
         return false;
     }
 

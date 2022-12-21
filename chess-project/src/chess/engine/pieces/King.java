@@ -2,10 +2,33 @@ package chess.engine.pieces;
 
 import chess.PieceType;
 import chess.PlayerColor;
+import chess.engine.Move;
+import chess.engine.MoveType;
+import chess.engine.Position;
+
+import java.util.ArrayList;
 
 public class King extends CastlingPiece{
+
+    static final ArrayList<Move> moves;
+
+    static {
+        moves = new ArrayList<>();
+        for (int x = -1; x < 2; ++x) {
+            for (int y = -1; y < 2; ++y) {
+                if (x == 0 && y == 0) continue;
+                moves.add(new Move(new Position(x, y), MoveType.BOTH));
+            }
+        }
+    }
+
     public King(PlayerColor color) {
         super(color, PieceType.KING);
+    }
+
+    @Override
+    public ArrayList<Move> getMoves() {
+        return moves;
     }
 
     //First Move : maxX = 2, maxY = 1, excludeZero = false, validMoveRatio = {0, 1}

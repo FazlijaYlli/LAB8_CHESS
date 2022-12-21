@@ -2,10 +2,30 @@ package chess.engine.pieces;
 
 import chess.PieceType;
 import chess.PlayerColor;
+import chess.engine.Move;
+import chess.engine.MoveType;
+import chess.engine.Position;
+
+import java.util.ArrayList;
 
 public class Pawn extends Piece{
+
+    static final ArrayList<Move> moves;
+
+    static {
+        moves = new ArrayList<>();
+        moves.add(new Move(new Position(0, 1), MoveType.MOVE));
+        moves.add(new Move(new Position(1, 1), MoveType.ATTACK));
+        moves.add(new Move(new Position(-1, 1), MoveType.ATTACK));
+    }
+
     public Pawn(PlayerColor color) {
         super(color, PieceType.PAWN);
+    }
+
+    @Override
+    public ArrayList<Move> getMoves() {
+        return moves;
     }
 
     //Pawn is special, maxY only applies in positives, not negatives, can't go backwards!

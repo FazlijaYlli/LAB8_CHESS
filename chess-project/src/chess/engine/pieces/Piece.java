@@ -2,8 +2,7 @@ package chess.engine.pieces;
 
 import chess.PlayerColor;
 import chess.PieceType;
-import chess.engine.MoveType;
-import chess.engine.Position;
+import chess.engine.Move;
 
 import java.util.ArrayList;
 
@@ -30,6 +29,9 @@ public abstract class Piece {
         }
     }
 
+    public ArrayList<Move> getMoves(){
+        return null;
+    }
 
     //When a Check occurs, only moves authorized should be :
     //  - Blocking the check with any piece (expect King obviously)
