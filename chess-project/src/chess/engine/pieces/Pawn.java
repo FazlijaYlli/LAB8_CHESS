@@ -10,13 +10,18 @@ import java.util.ArrayList;
 
 public class Pawn extends Piece{
 
-    static final ArrayList<Move> moves;
+    static final ArrayList<Move> whiteMoves;
+    static final ArrayList<Move> blackMoves;
 
     static {
-        moves = new ArrayList<>();
-        moves.add(new Move(new Position(0, 1), MoveType.MOVE));
-        moves.add(new Move(new Position(1, 1), MoveType.ATTACK));
-        moves.add(new Move(new Position(-1, 1), MoveType.ATTACK));
+        whiteMoves = new ArrayList<>();
+        blackMoves = new ArrayList<>();
+        whiteMoves.add(new Move(new Position(0, 1), MoveType.MOVE));
+        blackMoves.add(new Move(new Position(0, -1), MoveType.MOVE));
+        whiteMoves.add(new Move(new Position(1, 1), MoveType.ATTACK));
+        blackMoves.add(new Move(new Position(1, -1), MoveType.ATTACK));
+        whiteMoves.add(new Move(new Position(-1, 1), MoveType.ATTACK));
+        blackMoves.add(new Move(new Position(-1, -1), MoveType.ATTACK));
     }
 
     public Pawn(PlayerColor color) {
@@ -25,7 +30,10 @@ public class Pawn extends Piece{
 
     @Override
     public ArrayList<Move> getMoves() {
-        return moves;
+        return switch(getColor()) {
+            case BLACK -> blackMoves;
+            case WHITE -> whiteMoves;
+        };
     }
 
     //Pawn is special, maxY only applies in positives, not negatives, can't go backwards!

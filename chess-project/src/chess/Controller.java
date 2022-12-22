@@ -6,10 +6,12 @@ import chess.engine.Position;
 import chess.engine.pieces.*;
 
 import java.util.ArrayList;
+import java.lang.Math;
 
-public class Controller implements ChessController{
+public class Controller implements ChessController {
 
     Piece[][] board;
+    int[][] attackBoard;
     ChessView view;
 
     @Override
@@ -21,16 +23,46 @@ public class Controller implements ChessController{
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
-        if(board[fromY][fromX] == null)
+        if (toX == fromX && toY == fromY)
+            return false;
+
+        if (board[fromY][fromX] == null)
             return false;
 
         ArrayList<Move> possibleMoves = board[fromY][fromX].getMoves();
 
         for (Move move : possibleMoves) {
-            Position truePosition = move.getDestination();
-            truePosition.setX(truePosition.getX()+fromX);
-            truePosition.setY(truePosition.getY()+fromY);
-            if (truePosition.equals(new Position(toX,toY))){
+            Position truePosition = new Position(
+                    move.getDestination().getX() + fromX,
+                    move.getDestination().getY() + fromY
+            );
+            if (truePosition.equals(new Position(toX, toY))) {
+
+                //Empêcher de bouger s'y a une pièce sur le chemin
+                if (truePosition.getX() != 1 && truePosition.getY() != 1) {
+
+                    boolean pieceOnTheWay = false;
+                    boolean isXnull = move.getDestination().getX() == 0;
+                    boolean isXnegative = move.getDestination().getX() < 0;
+                    boolean isYnull = move.getDestination().getY() == 0;
+                    boolean isYnegative = move.getDestination().getY() < 0;
+
+                    for (int i = 1; i < Math.max(
+                            Math.abs(move.getDestination().getX()),
+                            Math.abs(move.getDestination().getY()));
+                         ++i) {
+
+                        if (board[fromY + i * (isYnull ? 0 : isYnegative ? -1 : 1)]
+                                [fromX + i * (isXnull ? 0 : isXnegative ? -1 : 1)] != null) {
+                            pieceOnTheWay = true;
+                            break;
+                        }
+                    }
+
+                    if (pieceOnTheWay) {
+                        continue;
+                    }
+                }
 
                 if (move.getType() != MoveType.MOVE) {
                     view.removePiece(toX, toY);
@@ -78,6 +110,16 @@ public class Controller implements ChessController{
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null) {
                     view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
+                }
+            }
+        }
+
+        // Setup attacks board
+        for (int line = 0; line < 8; ++line) {
+            for (int column = 0; column < 8; ++column) {
+                Piece p = board[line][column];
+                if (p != null) {
+
                 }
             }
         }

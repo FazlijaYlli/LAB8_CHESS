@@ -17,6 +17,8 @@ public class Knight extends Piece{
         for (int i = 1; i < 3; ++i) {
             moves.add(new Move(new Position(i, 3 - i), MoveType.BOTH));
             moves.add(new Move(new Position(-i, i - 3), MoveType.BOTH));
+            moves.add(new Move(new Position(i, i - 3), MoveType.BOTH));
+            moves.add(new Move(new Position(-i, 3 - i), MoveType.BOTH));
         }
     }
 
