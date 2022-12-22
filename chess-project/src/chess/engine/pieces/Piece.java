@@ -3,6 +3,7 @@ package chess.engine.pieces;
 import chess.PlayerColor;
 import chess.PieceType;
 import chess.engine.Move;
+import chess.engine.Position;
 
 import java.util.ArrayList;
 
@@ -29,8 +30,12 @@ public abstract class Piece {
         }
     }
 
-    public ArrayList<Move> getMoves(){
-        return null;
+    public boolean canMove(int x, int y){
+        return false;
+    }
+
+    public boolean canAttack(int x, int y){
+        return canMove(x,y);
     }
 
     //When a Check occurs, only moves authorized should be :
