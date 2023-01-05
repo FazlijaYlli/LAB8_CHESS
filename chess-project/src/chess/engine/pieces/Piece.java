@@ -2,10 +2,6 @@ package chess.engine.pieces;
 
 import chess.PlayerColor;
 import chess.PieceType;
-import chess.engine.Move;
-import chess.engine.Position;
-
-import java.util.ArrayList;
 
 public abstract class Piece {
     private final PlayerColor color;

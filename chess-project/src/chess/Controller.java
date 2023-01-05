@@ -1,11 +1,7 @@
 package chess;
 
-import chess.engine.Move;
-import chess.engine.MoveType;
-import chess.engine.Position;
 import chess.engine.pieces.*;
 
-import java.util.ArrayList;
 import java.lang.Math;
 
 public class Controller implements ChessController {
@@ -82,6 +78,7 @@ public class Controller implements ChessController {
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
         view.removePiece(fromX, fromY);
+
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
 
