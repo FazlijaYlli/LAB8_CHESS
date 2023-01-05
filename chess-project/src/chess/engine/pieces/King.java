@@ -4,9 +4,6 @@ import chess.PieceType;
 import chess.PlayerColor;
 
 public class King extends SpecialMovePiece {
-
-
-
     public King(PlayerColor color) {
         super(color, PieceType.KING);
     }

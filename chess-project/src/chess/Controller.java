@@ -7,6 +7,7 @@ import chess.engine.pieces.*;
 
 import java.util.ArrayList;
 import java.lang.Math;
+import java.util.Scanner;
 
 public class Controller implements ChessController {
 
@@ -85,15 +86,21 @@ public class Controller implements ChessController {
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
 
-        if (toY == (playerTurn == PlayerColor.WHITE ? 1 : 0) * 7) {
-            view.removePiece(toX, toY);
-            view.putPiece(PieceType.QUEEN, playerTurn, toX, toY);
-            board[toY][toX] = new Queen(playerTurn);
+        if (toY == (playerTurn == PlayerColor.WHITE ? 7 : 0) && board[toY][toX].getType() == PieceType.PAWN) {
+            promotion(toX, toY);
         }
 
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
 
         return true;
+    }
+
+    private void promotion(int toX, int toY) {
+        Piece toPromote = view.askUser("Promotion disponible !", "Quelle pièce souhaitez-vous obtenir ?",
+                new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
+        view.removePiece(toX,toY);
+        view.putPiece(toPromote.getType(),playerTurn,toX,toY);
+        board[toY][toX] = toPromote;
     }
 
     public boolean isCellAttacked(PlayerColor by, int x, int y) {
