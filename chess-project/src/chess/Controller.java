@@ -10,12 +10,10 @@ import java.lang.Math;
 
 public class Controller implements ChessController {
 
-    Piece[][] board;
-    int[][] attackBoard;
-    ChessView view;
+    private Piece[][] board;
+    private ChessView view;
 
     private PlayerColor playerTurn = PlayerColor.WHITE;
-
 
     @Override
     public void start(ChessView view) {
@@ -26,52 +24,61 @@ public class Controller implements ChessController {
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
-        // Si on déplace la pièce sur elle même
+        // Not moving isn't a move
         if (toX == fromX && toY == fromY)
             return false;
 
-        // Si ce n'est pas le tour de ce joueur
-        if (board[fromY][fromX].getColor() != playerTurn)
+        // Can't move empty space
+        if (board[fromY][fromX] == null)
             return false;
 
-        // Si emplacement from est vide
-        if (board[fromY][fromX] == null)
+        // Wait for opponent move
+        if (board[fromY][fromX].getColor() != playerTurn)
             return false;
 
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
-        // Si emplacement to est vide
-        if (board[toY][toX] == null){
-            if(!board[fromY][fromX].canMove(relativeX,relativeY))
+        if (board[toY][toX] == null) {
+
+            // Move
+
+            if (!board[fromY][fromX].canMove(relativeX, relativeY))
                 return false;
-        }
-        // Si emplacement to est occupé
-        else {
-            // Si est pièce de même couleur
-            if(board[fromY][fromX].getColor() == board[toY][toX].getColor())
+        } else {
+
+            // Attack
+
+            // Can't attack friends
+            if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
                 return false;
-            // si ne peut pas se deplacer sur cette case
-            if(!board[fromY][fromX].canAttack(relativeX,relativeY))
+
+            if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                 return false;
         }
 
-        // si la pièce doit vérifer les collision ou non
-        if (board[fromY][fromX].isCollisionable()){
+        // Some pieces can't move over other pieces
+        if (board[fromY][fromX].isCollisionable()) {
 
-            int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
-            int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
+            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
 
             int x = fromX + directionX, y = fromY + directionY;
-            while (!(x == toX && y == toY)){
+
+            while (!(x == toX && y == toY)) {
+
+                // Check every cell until destination
+
                 if (board[y][x] != null)
                     return false;
+
                 x += directionX;
                 y += directionY;
             }
         }
 
-        // déplacement de la pièce
+        // Actually move piece
+
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
         view.removePiece(fromX, fromY);
@@ -85,25 +92,45 @@ public class Controller implements ChessController {
         }
 
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
-        return true;
 
+        return true;
+    }
+
+    public boolean isCellAttacked(PlayerColor by, int x, int y) {
+
+        if (x < 0 || x > 7 || y < 0 || y > 7) {
+            throw new RuntimeException("Invalid cell : x(" + x + "), y(" + y + ")!");
+        }
+
+        for (int line = 0; line < 8; ++line) {
+            for (int column = 0; column < 8; ++column) {
+                if (board[line][column] != null && board[line][column].getColor() == by &&
+                        board[line][column].canAttack(y - line, x - column)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
     public void newGame() {
+
         board = new Piece[8][8];
 
         // Back Pieces
 
         for (int i = 0; i < 4; ++i) {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
+
             board[7 * (i % 2)][7 * (i > 1 ? 1 : 0)] = new Rook(currentColor);
             board[7 * (i % 2)][1 + 5 * (i > 1 ? 1 : 0)] = new Knight(currentColor);
             board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
+
             if (i > 1) {
                 board[7 * (i % 2)][3] = new Queen(currentColor);
-            }
-            else {
+            } else {
                 board[7 * (i % 2)][4] = new King(currentColor);
             }
         }
@@ -121,16 +148,6 @@ public class Controller implements ChessController {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null) {
                     view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
-                }
-            }
-        }
-
-        // Setup attacks board
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
-                Piece p = board[line][column];
-                if (p != null) {
-
                 }
             }
         }
