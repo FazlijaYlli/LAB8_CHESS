@@ -48,7 +48,6 @@ public class Controller implements ChessController {
                 return false;
         }
 
-        /*
         // si la pièce doit vérifer les collision ou non
         if (board[fromY][fromX].isCollisionable()){
 
@@ -57,15 +56,13 @@ public class Controller implements ChessController {
 
             int x = fromX, y = fromY;
             while (!(x == toX && y == toY)){
-                if (board[fromY+y][fromX+x] != null)
-                    return false;
                 x += directionX;
                 y += directionY;
+                if (board[y][x] != null)
+                    return false;
             }
         }
 
-
-         */
         // déplacement de la pièce
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
