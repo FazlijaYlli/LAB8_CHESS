@@ -26,9 +26,53 @@ public class Controller implements ChessController {
         if (toX == fromX && toY == fromY)
             return false;
 
+        // Si emplacement fro est vide
         if (board[fromY][fromX] == null)
             return false;
 
+        int relativeX = toX - fromX;
+        int relativeY = toY - fromY;
+
+        // Si emplacement to est vide
+        if (board[toY][toX] == null){
+            if(!board[fromY][fromX].canMove(relativeX,relativeY))
+                return false;
+        }
+        // Si emplacement to est occupé
+        else {
+            // Si est pièce de même couleur
+            if(board[fromY][fromX].getColor() == board[toY][toX].getColor())
+                return false;
+            // si ne peut pas se deplacer sur cette case
+            if(!board[toY][toX].canAttack(relativeX,relativeY))
+                return false;
+        }
+
+        // si la pièce doit vérifer les collision ou non
+        /*
+        if ( (Math.abs(relativeX) == 1 || Math.abs(relativeY) == 1) && board[fromY][fromX].isCollisionable()){
+
+            int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
+            int x = fromX, y = fromY;
+            while (!(x == toX && y == toY)){
+                if (board[fromY+y][fromX+x] != null)
+                    return false;
+                x += directionX;
+                y += directionY;
+            }
+        }
+         */
+
+        // déplacement de la pièce
+        view.removePiece(toX, toY);
+        view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
+        view.removePiece(fromX, fromY);
+        board[toY][toX] = board[fromY][fromX];
+        board[fromY][fromX] = null;
+        return true;
+
+        /*
         ArrayList<Move> possibleMoves = board[fromY][fromX].getMoves();
 
         for (Move move : possibleMoves) {
@@ -75,7 +119,7 @@ public class Controller implements ChessController {
                 return true;
             }
         }
-        return false;
+        */
     }
 
     @Override

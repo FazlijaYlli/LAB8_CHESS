@@ -11,6 +11,7 @@ public abstract class Piece {
     private final PlayerColor color;
     private final PieceType type;
 
+    boolean collisionable = true;
     public Piece(PlayerColor color, PieceType type) {
         this.color = color;
         this.type = type;
@@ -36,6 +37,10 @@ public abstract class Piece {
 
     public boolean canAttack(int x, int y){
         return canMove(x,y);
+    }
+
+    public boolean isCollisionable() {
+        return collisionable;
     }
 
     //When a Check occurs, only moves authorized should be :

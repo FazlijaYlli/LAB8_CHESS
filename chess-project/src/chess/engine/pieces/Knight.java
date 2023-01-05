@@ -7,6 +7,7 @@ public class Knight extends Piece{
 
     public Knight(PlayerColor color) {
         super(color, PieceType.KNIGHT);
+        collisionable = false;
     }
 
     public boolean canMove(int x,int y){
