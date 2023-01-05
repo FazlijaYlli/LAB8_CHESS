@@ -44,16 +44,17 @@ public class Controller implements ChessController {
             if(board[fromY][fromX].getColor() == board[toY][toX].getColor())
                 return false;
             // si ne peut pas se deplacer sur cette case
-            if(!board[toY][toX].canAttack(relativeX,relativeY))
+            if(!board[fromY][fromX].canAttack(relativeX,relativeY))
                 return false;
         }
 
-        // si la pièce doit vérifer les collision ou non
         /*
-        if ( (Math.abs(relativeX) == 1 || Math.abs(relativeY) == 1) && board[fromY][fromX].isCollisionable()){
+        // si la pièce doit vérifer les collision ou non
+        if (board[fromY][fromX].isCollisionable()){
 
             int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
             int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
+
             int x = fromX, y = fromY;
             while (!(x == toX && y == toY)){
                 if (board[fromY+y][fromX+x] != null)
@@ -62,8 +63,9 @@ public class Controller implements ChessController {
                 y += directionY;
             }
         }
-         */
 
+
+         */
         // déplacement de la pièce
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
@@ -72,54 +74,6 @@ public class Controller implements ChessController {
         board[fromY][fromX] = null;
         return true;
 
-        /*
-        ArrayList<Move> possibleMoves = board[fromY][fromX].getMoves();
-
-        for (Move move : possibleMoves) {
-            Position truePosition = new Position(
-                    move.getDestination().getX() + fromX,
-                    move.getDestination().getY() + fromY
-            );
-            if (truePosition.equals(new Position(toX, toY))) {
-
-                //Empêcher de bouger s'y a une pièce sur le chemin
-                if (truePosition.getX() != 1 && truePosition.getY() != 1) {
-
-                    boolean pieceOnTheWay = false;
-                    boolean isXnull = move.getDestination().getX() == 0;
-                    boolean isXnegative = move.getDestination().getX() < 0;
-                    boolean isYnull = move.getDestination().getY() == 0;
-                    boolean isYnegative = move.getDestination().getY() < 0;
-
-                    for (int i = 1; i < Math.max(
-                            Math.abs(move.getDestination().getX()),
-                            Math.abs(move.getDestination().getY()));
-                         ++i) {
-
-                        if (board[fromY + i * (isYnull ? 0 : isYnegative ? -1 : 1)]
-                                [fromX + i * (isXnull ? 0 : isXnegative ? -1 : 1)] != null) {
-                            pieceOnTheWay = true;
-                            break;
-                        }
-                    }
-
-                    if (pieceOnTheWay) {
-                        continue;
-                    }
-                }
-
-                if (move.getType() != MoveType.MOVE) {
-                    view.removePiece(toX, toY);
-                }
-
-                view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
-                view.removePiece(fromX, fromY);
-                board[toY][toX] = board[fromY][fromX];
-                board[fromY][fromX] = null;
-                return true;
-            }
-        }
-        */
     }
 
     @Override
