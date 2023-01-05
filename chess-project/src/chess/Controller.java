@@ -11,8 +11,12 @@ public class Controller implements ChessController {
     private Piece[][] board;
     private ChessView view;
 
-    Position whiteKingPos;
-    Position blackKingPos;
+    private Position whiteKingPos;
+    private Position blackKingPos;
+
+    private int nbChecks;
+    private Piece lastMove;
+    private Position posLastMove;
 
     private PlayerColor playerTurn = PlayerColor.WHITE;
 
@@ -33,12 +37,9 @@ public class Controller implements ChessController {
             return false;
 
         // Movements spéciaux
-        if(board[fromY][fromX] instanceof SpecialMovePiece){
-            if (board[fromY][fromX].getType() == PieceType.KING){
-                if(castling(fromX,fromY,toX,toY))
-                    return true;
-            }
-
+        if (board[fromY][fromX] instanceof King) {
+            if (castling(fromX, fromY, toX, toY))
+                return true;
         }
 
         // Can't move empty space
@@ -52,28 +53,80 @@ public class Controller implements ChessController {
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
-        if (board[toY][toX] == null) {
+        if (nbChecks > 0) {
 
-            // Move
-            if (!board[fromY][fromX].canMove(relativeX, relativeY))
-                return false;
+            boolean countered = false;
+            Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
+
+            // Option 1 : Eating the piece that caused a check, which only possible if there's 1 checking piece
+            if (nbChecks == 1) {
+                // There are 3 scenarios for this option :
+                // Scenario 1 : The piece that moved checked the King
+                countered = lastMove.canAttack(relativeX, relativeY)
+                        && lastMove.equals(board[toY][toX])
+                        && board[fromY][fromX].canAttack(relativeX, relativeY);
+
+                // Scenario 2 : The piece that moved created a discovered check
+                if (!countered) {
+                    int findX = currentKingPos.getX() - posLastMove.getX();
+                    int findY = currentKingPos.getY() - posLastMove.getY();
+
+                    int directionX = findX == 0 ? 0 : findX / Math.abs(findX);
+                    int directionY = findY == 0 ? 0 : findY / Math.abs(findY);
+
+                    int x = posLastMove.getX() + directionX, y = posLastMove.getY() + directionY;
+
+                    while (!(x < 0 || x > 7 || y < 0 || y > 7) && board[y][x] == null) {
+
+                        x += directionX;
+                        y += directionY;
+                    }
+
+                    countered = board[y][x].canAttack(currentKingPos.getX() - x, currentKingPos.getY() - y);
+
+                    // Scenario 3 : An En Passant created a discovered check via the eaten pawn
+                    if (!countered) {
+                        // TODO
+                    }
+                }
+
+                // Option 2 : Blocking the move, also requires 1 checking piece
+                if (lastMove.isCollisionable()) {
+
+                }
+            }
+
+            // Option 3 : Moving the king out of harm
+            if (!countered) {
+                countered = from.equals(currentKingPos) && !isCellAttacked(getOpponent(), to);
+            }
+
+            if (!countered) return false;
+
         } else {
 
-            // Attack
+            if (board[toY][toX] == null) {
 
-            // Can't attack friends
-            if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
-                return false;
+                // Move
+                if (!board[fromY][fromX].canMove(relativeX, relativeY))
+                    return false;
+            } else {
 
-            if (!board[fromY][fromX].canAttack(relativeX, relativeY))
-                return false;
+                // Attack
+
+                // Can't attack friends
+                if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
+                    return false;
+
+                if (!board[fromY][fromX].canAttack(relativeX, relativeY))
+                    return false;
+            }
         }
 
         // Some pieces can't move over other pieces
         if (collision(from, to)) return false;
 
         // Actually move piece
-
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), playerTurn, toX, toY);
         view.removePiece(fromX, fromY);
@@ -85,12 +138,19 @@ public class Controller implements ChessController {
             promotion(toX, toY);
         }
 
+        // Update last move
+        lastMove = board[toY][toX];
+        posLastMove = from;
+
         // Update King position
         if (from.equals(whiteKingPos)) whiteKingPos = to;
         if (from.equals(blackKingPos)) blackKingPos = to;
 
         // Check
-        if (isCellAttacked(playerTurn, playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos)) {
+        if ((nbChecks =
+                countCellAttacked(playerTurn, playerTurn ==
+                        PlayerColor.WHITE ? blackKingPos : whiteKingPos))
+                > 0) {
             view.displayMessage("Check!");
         }
 
@@ -127,14 +187,15 @@ public class Controller implements ChessController {
         return false;
     }
 
-    PlayerColor getOpponent(){
+    PlayerColor getOpponent() {
         return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
+
     private void promotion(int toX, int toY) {
         Piece toPromote = view.askUser("Promotion disponible !", "Quelle pièce souhaitez-vous obtenir ?",
                 new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
-        view.removePiece(toX,toY);
-        view.putPiece(toPromote.getType(),playerTurn,toX,toY);
+        view.removePiece(toX, toY);
+        view.putPiece(toPromote.getType(), playerTurn, toX, toY);
         board[toY][toX] = toPromote;
     }
 
@@ -155,7 +216,25 @@ public class Controller implements ChessController {
         return false;
     }
 
-    boolean castling(int fromX,int fromY, int toX, int toY){
+    private int countCellAttacked(PlayerColor by, Position cell) {
+
+        // Uses same code as isCellAttacked above except it counts the number of attacks
+        int counter = 0;
+
+        for (int line = 0; line < 8; ++line) {
+            for (int column = 0; column < 8; ++column) {
+                if (board[line][column] != null && board[line][column].getColor() == by &&
+                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        && !collision(new Position(column, line), cell)) {
+                    ++counter;
+                }
+            }
+        }
+
+        return counter;
+    }
+
+    boolean castling(int fromX, int fromY, int toX, int toY) {
 
         if (toY != fromY)
             return false;
@@ -168,16 +247,16 @@ public class Controller implements ChessController {
 
         //check if pieces are castlelable and has already moved
         if (!(board[fromY][fromX] instanceof King
-            && board[fromY][rookX] instanceof Rook)){
+                && board[fromY][rookX] instanceof Rook)) {
             if (((SpecialMovePiece) board[fromY][fromX]).getHasMoved()
-                || ((SpecialMovePiece) board[fromY][rookX]).getHasMoved()){
+                    || ((SpecialMovePiece) board[fromY][rookX]).getHasMoved()) {
                 return false;
             }
             return false;
         }
 
-        for (int x = fromX + (bigCastle ? -1 : 1); x != toX; x += bigCastle ? -1 : 1){
-            if (!(board[fromY][x] == null && !isCellAttacked(getOpponent(),new Position(x,fromY))))
+        for (int x = fromX + (bigCastle ? -1 : 1); x != toX; x += bigCastle ? -1 : 1) {
+            if (!(board[fromY][x] == null && !isCellAttacked(getOpponent(), new Position(x, fromY))))
                 return false;
         }
 
@@ -207,6 +286,7 @@ public class Controller implements ChessController {
     public void newGame() {
 
         board = new Piece[8][8];
+        nbChecks = 0;
 
         // Back Pieces
 
