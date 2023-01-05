@@ -3,14 +3,20 @@ package chess.engine.pieces;
 import chess.PieceType;
 import chess.PlayerColor;
 
-public class Pawn extends Piece{
+public class Pawn extends SpecialMovePiece {
 
     public Pawn(PlayerColor color) {
         super(color, PieceType.PAWN);
     }
 
     public boolean canMove(int x, int y){
-        return y == (getColor() == PlayerColor.WHITE ? 1 : -1) && x == 0;
+        if (!getHasMoved() && y == (getColor() == PlayerColor.WHITE ? 2 : -2) && x == 0) {
+            hasMoved = true;
+            return true;
+        } else {
+            hasMoved = true;
+            return y == (getColor() == PlayerColor.WHITE ? 1 : -1) && x == 0;
+        }
     }
 
     public boolean canAttack(int x, int y){

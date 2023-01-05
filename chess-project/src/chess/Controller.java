@@ -13,6 +13,9 @@ public class Controller implements ChessController {
     Piece[][] board;
     ChessView view;
 
+    private PlayerColor playerTurn = PlayerColor.WHITE;
+
+
     @Override
     public void start(ChessView view) {
         this.view = view;
@@ -22,10 +25,15 @@ public class Controller implements ChessController {
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
+        // Si on déplace la pièce sur elle même
         if (toX == fromX && toY == fromY)
             return false;
 
-        // Si emplacement fro est vide
+        // Si ce n'est pas le tour de ce joueur
+        if (board[fromY][fromX].getColor() != playerTurn)
+            return false;
+
+        // Si emplacement from est vide
         if (board[fromY][fromX] == null)
             return false;
 
@@ -53,12 +61,12 @@ public class Controller implements ChessController {
             int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
             int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
 
-            int x = fromX, y = fromY;
+            int x = fromX + directionX, y = fromY + directionY;
             while (!(x == toX && y == toY)){
-                x += directionX;
-                y += directionY;
                 if (board[y][x] != null)
                     return false;
+                x += directionX;
+                y += directionY;
             }
         }
 
@@ -68,6 +76,8 @@ public class Controller implements ChessController {
         view.removePiece(fromX, fromY);
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
+
+        playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
         return true;
 
     }
