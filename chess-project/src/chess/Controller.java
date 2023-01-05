@@ -56,9 +56,8 @@ public class Controller implements ChessController {
         int relativeY = toY - fromY;
 
         Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
-        Position otherKingPos = playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
 
-        /*if (nbChecks > 0) {
+        if (nbChecks > 0) {
 
             boolean countered = false;
 
@@ -107,7 +106,7 @@ public class Controller implements ChessController {
 
             if (!countered) return false;
 
-        } else {*/
+        } else {
 
             if (board[toY][toX] == null) {
 
@@ -125,7 +124,7 @@ public class Controller implements ChessController {
                 if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                     return false;
             }
-        //}
+        }
 
         // Some pieces can't move over other pieces
         if (collision(from, to)) return false;
@@ -136,6 +135,8 @@ public class Controller implements ChessController {
     }
 
     private void endOfTurn(Position from, Position to, int fromX, int fromY, int toX, int toY){
+
+        Position otherKingPos = playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
 
         // Actually move piece
         view.removePiece(toX, toY);
