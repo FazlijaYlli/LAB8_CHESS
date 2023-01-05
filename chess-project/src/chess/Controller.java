@@ -24,61 +24,71 @@ public class Controller implements ChessController {
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
-        // Si on déplace la pièce sur elle même
+        // Not moving isn't a move
         if (toX == fromX && toY == fromY)
             return false;
 
-        // Si ce n'est pas le tour de ce joueur
-        if (board[fromY][fromX].getColor() != playerTurn)
+        // Can't move empty space
+        if (board[fromY][fromX] == null)
             return false;
 
-        // Si emplacement from est vide
-        if (board[fromY][fromX] == null)
+        // Wait for opponent move
+        if (board[fromY][fromX].getColor() != playerTurn)
             return false;
 
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
-        // Si emplacement to est vide
-        if (board[toY][toX] == null){
-            if(!board[fromY][fromX].canMove(relativeX,relativeY))
+        if (board[toY][toX] == null) {
+
+            // Move
+
+            if (!board[fromY][fromX].canMove(relativeX, relativeY))
                 return false;
-        }
-        // Si emplacement to est occupé
-        else {
-            // Si est pièce de même couleur
-            if(board[fromY][fromX].getColor() == board[toY][toX].getColor())
+        } else {
+
+            // Attack
+
+            // Can't attack friends
+            if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
                 return false;
-            // si ne peut pas se deplacer sur cette case
-            if(!board[fromY][fromX].canAttack(relativeX,relativeY))
+
+            if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                 return false;
         }
 
-        // si la pièce doit vérifer les collision ou non
-        if (board[fromY][fromX].isCollisionable()){
+        // Some pieces can't move over other pieces
+        if (board[fromY][fromX].isCollisionable()) {
 
-            int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
-            int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
+            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
 
             int x = fromX + directionX, y = fromY + directionY;
-            while (!(x == toX && y == toY)){
+
+            while (!(x == toX && y == toY)) {
+
+                // Check every cell until destination
+
                 if (board[y][x] != null)
                     return false;
+
                 x += directionX;
                 y += directionY;
             }
         }
 
-        // déplacement de la pièce
+        // Actually move piece
+
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
         view.removePiece(fromX, fromY);
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
 
+        // Change turn
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
-        return true;
 
+        return true;
     }
 
     public boolean isCellAttacked(PlayerColor by, int x, int y) {
@@ -112,8 +122,7 @@ public class Controller implements ChessController {
             board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
             if (i > 1) {
                 board[7 * (i % 2)][3] = new Queen(currentColor);
-            }
-            else {
+            } else {
                 board[7 * (i % 2)][4] = new King(currentColor);
             }
         }
