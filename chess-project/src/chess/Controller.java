@@ -32,6 +32,15 @@ public class Controller implements ChessController {
         if (from.equals(to))
             return false;
 
+        // Movements spéciaux
+        if(board[fromY][fromX] instanceof SpecialMovePiece){
+            if (board[fromY][fromX].getType() == PieceType.KING){
+                if(castling(fromX,fromY,toX,toY))
+                    return true;
+            }
+
+        }
+
         // Can't move empty space
         if (board[fromY][fromX] == null)
             return false;
@@ -66,7 +75,7 @@ public class Controller implements ChessController {
         // Actually move piece
 
         view.removePiece(toX, toY);
-        view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
+        view.putPiece(board[fromY][fromX].getType(), playerTurn, toX, toY);
         view.removePiece(fromX, fromY);
 
         board[toY][toX] = board[fromY][fromX];
@@ -86,7 +95,7 @@ public class Controller implements ChessController {
         }
 
         // Change turn
-        playerTurn = ;
+        playerTurn = getOpponent();
 
         return true;
     }
@@ -103,7 +112,7 @@ public class Controller implements ChessController {
 
             int x = from.getX() + directionX, y = from.getY() + directionY;
 
-            while (!(x == to.getX() && y == to.getY())) {
+            while (!(x < 0 || x > 7 || y < 0 || y > 7) && !(x == to.getX() && y == to.getY())) {
 
                 // Check every cell until destination
 
@@ -118,6 +127,9 @@ public class Controller implements ChessController {
         return false;
     }
 
+    PlayerColor getOpponent(){
+        return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
     private void promotion(int toX, int toY) {
         Piece toPromote = view.askUser("Promotion disponible !", "Quelle pièce souhaitez-vous obtenir ?",
                 new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
@@ -141,6 +153,54 @@ public class Controller implements ChessController {
         }
 
         return false;
+    }
+
+    boolean castling(int fromX,int fromY, int toX, int toY){
+
+        if (toY != fromY)
+            return false;
+
+        if (!(toX == 6 || toX == 1))
+            return false;
+
+        boolean bigCastle = toX == 1;
+        int rookX = bigCastle ? 0 : 7;
+
+        //check if pieces are castlelable and has already moved
+        if (!(board[fromY][fromX] instanceof King
+            && board[fromY][rookX] instanceof Rook)){
+            if (((SpecialMovePiece) board[fromY][fromX]).getHasMoved()
+                || ((SpecialMovePiece) board[fromY][rookX]).getHasMoved()){
+                return false;
+            }
+            return false;
+        }
+
+        for (int x = fromX + (bigCastle ? -1 : 1); x != toX; x += bigCastle ? -1 : 1){
+            if (!(board[fromY][x] == null && !isCellAttacked(getOpponent(),new Position(x,fromY))))
+                return false;
+        }
+
+        // moving pieces
+        //king
+        view.putPiece(PieceType.KING, playerTurn, toX, toY);
+        view.removePiece(fromX, fromY);
+
+        //rook
+        view.putPiece(PieceType.ROOK, playerTurn, bigCastle ? 2 : 5, toY);
+        view.removePiece((bigCastle ? 0 : 7), fromY);
+
+        //king
+        board[toY][toX] = board[fromY][fromX];
+        board[fromY][fromX] = null;
+
+        //rook
+        board[toY][bigCastle ? 2 : 5] = board[fromY][bigCastle ? 0 : 7];
+        board[fromY][bigCastle ? 0 : 7] = null;
+
+        playerTurn = getOpponent();
+        return true;
+
     }
 
     @Override
