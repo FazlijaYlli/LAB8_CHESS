@@ -1,9 +1,10 @@
 package chess.engine.pieces;
 
+import chess.ChessView;
 import chess.PlayerColor;
 import chess.PieceType;
 
-public abstract class Piece {
+public abstract class Piece implements ChessView.UserChoice {
     private final PlayerColor color;
     private final PieceType type;
 
@@ -27,6 +28,10 @@ public abstract class Piece {
         if (x == 0 && y == 0) {
             throw new IllegalArgumentException("Not moving isn't a move!");
         }
+    }
+
+    public String textValue() {
+        return getClass().getSimpleName();
     }
 
     public boolean canMove(int x, int y){

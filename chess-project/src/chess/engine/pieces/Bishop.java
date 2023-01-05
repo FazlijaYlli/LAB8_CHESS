@@ -12,4 +12,5 @@ public class Bishop extends Piece{
     public boolean canMove(int x, int y){
         return y != 0 && Math.abs(x) == Math.abs(y);
     }
+
 }
