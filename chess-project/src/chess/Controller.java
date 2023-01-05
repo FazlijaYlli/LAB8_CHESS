@@ -14,6 +14,9 @@ public class Controller implements ChessController {
     int[][] attackBoard;
     ChessView view;
 
+    private PlayerColor playerTurn = PlayerColor.WHITE;
+
+
     @Override
     public void start(ChessView view) {
         this.view = view;
@@ -23,59 +26,61 @@ public class Controller implements ChessController {
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
+        // Si on déplace la pièce sur elle même
         if (toX == fromX && toY == fromY)
             return false;
 
+        // Si ce n'est pas le tour de ce joueur
+        if (board[fromY][fromX].getColor() != playerTurn)
+            return false;
+
+        // Si emplacement from est vide
         if (board[fromY][fromX] == null)
             return false;
 
-        ArrayList<Move> possibleMoves = board[fromY][fromX].getMoves();
+        int relativeX = toX - fromX;
+        int relativeY = toY - fromY;
 
-        for (Move move : possibleMoves) {
-            Position truePosition = new Position(
-                    move.getDestination().getX() + fromX,
-                    move.getDestination().getY() + fromY
-            );
-            if (truePosition.equals(new Position(toX, toY))) {
+        // Si emplacement to est vide
+        if (board[toY][toX] == null){
+            if(!board[fromY][fromX].canMove(relativeX,relativeY))
+                return false;
+        }
+        // Si emplacement to est occupé
+        else {
+            // Si est pièce de même couleur
+            if(board[fromY][fromX].getColor() == board[toY][toX].getColor())
+                return false;
+            // si ne peut pas se deplacer sur cette case
+            if(!board[fromY][fromX].canAttack(relativeX,relativeY))
+                return false;
+        }
 
-                //Empêcher de bouger s'y a une pièce sur le chemin
-                if (truePosition.getX() != 1 && truePosition.getY() != 1) {
+        // si la pièce doit vérifer les collision ou non
+        if (board[fromY][fromX].isCollisionable()){
 
-                    boolean pieceOnTheWay = false;
-                    boolean isXnull = move.getDestination().getX() == 0;
-                    boolean isXnegative = move.getDestination().getX() < 0;
-                    boolean isYnull = move.getDestination().getY() == 0;
-                    boolean isYnegative = move.getDestination().getY() < 0;
+            int directionX = relativeX == 0 ? 0: relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0: relativeY / Math.abs(relativeY);
 
-                    for (int i = 1; i < Math.max(
-                            Math.abs(move.getDestination().getX()),
-                            Math.abs(move.getDestination().getY()));
-                         ++i) {
-
-                        if (board[fromY + i * (isYnull ? 0 : isYnegative ? -1 : 1)]
-                                [fromX + i * (isXnull ? 0 : isXnegative ? -1 : 1)] != null) {
-                            pieceOnTheWay = true;
-                            break;
-                        }
-                    }
-
-                    if (pieceOnTheWay) {
-                        continue;
-                    }
-                }
-
-                if (move.getType() != MoveType.MOVE) {
-                    view.removePiece(toX, toY);
-                }
-
-                view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
-                view.removePiece(fromX, fromY);
-                board[toY][toX] = board[fromY][fromX];
-                board[fromY][fromX] = null;
-                return true;
+            int x = fromX + directionX, y = fromY + directionY;
+            while (!(x == toX && y == toY)){
+                if (board[y][x] != null)
+                    return false;
+                x += directionX;
+                y += directionY;
             }
         }
-        return false;
+
+        // déplacement de la pièce
+        view.removePiece(toX, toY);
+        view.putPiece(board[fromY][fromX].getType(), board[fromY][fromX].getColor(), toX, toY);
+        view.removePiece(fromX, fromY);
+        board[toY][toX] = board[fromY][fromX];
+        board[fromY][fromX] = null;
+
+        playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+        return true;
+
     }
 
     @Override

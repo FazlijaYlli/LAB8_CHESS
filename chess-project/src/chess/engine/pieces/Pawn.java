@@ -2,38 +2,25 @@ package chess.engine.pieces;
 
 import chess.PieceType;
 import chess.PlayerColor;
-import chess.engine.Move;
-import chess.engine.MoveType;
-import chess.engine.Position;
 
-import java.util.ArrayList;
-
-public class Pawn extends Piece{
-
-    static final ArrayList<Move> whiteMoves;
-    static final ArrayList<Move> blackMoves;
-
-    static {
-        whiteMoves = new ArrayList<>();
-        blackMoves = new ArrayList<>();
-        whiteMoves.add(new Move(new Position(0, 1), MoveType.MOVE));
-        blackMoves.add(new Move(new Position(0, -1), MoveType.MOVE));
-        whiteMoves.add(new Move(new Position(1, 1), MoveType.ATTACK));
-        blackMoves.add(new Move(new Position(1, -1), MoveType.ATTACK));
-        whiteMoves.add(new Move(new Position(-1, 1), MoveType.ATTACK));
-        blackMoves.add(new Move(new Position(-1, -1), MoveType.ATTACK));
-    }
+public class Pawn extends SpecialMovePiece {
 
     public Pawn(PlayerColor color) {
         super(color, PieceType.PAWN);
     }
 
-    @Override
-    public ArrayList<Move> getMoves() {
-        return switch(getColor()) {
-            case BLACK -> blackMoves;
-            case WHITE -> whiteMoves;
-        };
+    public boolean canMove(int x, int y){
+        if (!getHasMoved() && y == (getColor() == PlayerColor.WHITE ? 2 : -2) && x == 0) {
+            hasMoved = true;
+            return true;
+        } else {
+            hasMoved = true;
+            return y == (getColor() == PlayerColor.WHITE ? 1 : -1) && x == 0;
+        }
+    }
+
+    public boolean canAttack(int x, int y){
+        return y == (getColor() == PlayerColor.WHITE ? 1 : -1) && Math.abs(x) == 1;
     }
 
     //Pawn is special, maxY only applies in positives, not negatives, can't go backwards!
