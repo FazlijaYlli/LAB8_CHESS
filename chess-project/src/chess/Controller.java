@@ -10,8 +10,8 @@ import java.lang.Math;
 
 public class Controller implements ChessController {
 
-    Piece[][] board;
-    ChessView view;
+    private Piece[][] board;
+    private ChessView view;
 
     private PlayerColor playerTurn = PlayerColor.WHITE;
 
@@ -111,15 +111,18 @@ public class Controller implements ChessController {
 
     @Override
     public void newGame() {
+
         board = new Piece[8][8];
 
         // Back Pieces
 
         for (int i = 0; i < 4; ++i) {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
+
             board[7 * (i % 2)][7 * (i > 1 ? 1 : 0)] = new Rook(currentColor);
             board[7 * (i % 2)][1 + 5 * (i > 1 ? 1 : 0)] = new Knight(currentColor);
             board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
+
             if (i > 1) {
                 board[7 * (i % 2)][3] = new Queen(currentColor);
             } else {
