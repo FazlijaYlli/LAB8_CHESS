@@ -134,7 +134,7 @@ public class Controller implements ChessController {
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
 
-        if (toY == (playerTurn == PlayerColor.WHITE ? 7 : 0) && board[toY][toX].getType() == PieceType.PAWN) {
+        if (toY == (playerTurn == PlayerColor.WHITE ? 7 : 0) && board[toY][toX] instanceof Pawn) {
             promotion(toX, toY);
         }
 
