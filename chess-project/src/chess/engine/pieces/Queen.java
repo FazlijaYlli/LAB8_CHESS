@@ -10,7 +10,8 @@ public class Queen extends Piece{
     }
 
     public boolean canMove(int x, int y){
-        return (y != 0 && (Math.abs(x/y) == 1 || x == 0)) || x != 0;
+        return (x+y != 0 && x*y == 0) //Rook
+                || (y != 0 && Math.abs(x) == Math.abs(y)); //Bishop
     }
 
 }
