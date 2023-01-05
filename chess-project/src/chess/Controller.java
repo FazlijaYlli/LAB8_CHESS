@@ -36,12 +36,6 @@ public class Controller implements ChessController {
         if (from.equals(to))
             return false;
 
-        // Movements spéciaux
-        if (board[fromY][fromX] instanceof King) {
-            if (castling(fromX, fromY, toX, toY))
-                return true;
-        }
-
         // Can't move empty space
         if (board[fromY][fromX] == null)
             return false;
@@ -49,6 +43,14 @@ public class Controller implements ChessController {
         // Wait for opponent move
         if (board[fromY][fromX].getColor() != playerTurn)
             return false;
+
+        // Special moves
+        if (board[fromY][fromX] instanceof King) {
+            if (castling(fromX, fromY, toX, toY)){
+                endOfTurn(from,to,fromX,fromY,toX,toY);
+                return true;
+            }
+        }
 
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
@@ -126,6 +128,13 @@ public class Controller implements ChessController {
         // Some pieces can't move over other pieces
         if (collision(from, to)) return false;
 
+        endOfTurn(from,to,fromX,fromY,toX,toY);
+
+        return true;
+    }
+
+    private void endOfTurn(Position from, Position to, int fromX, int fromY, int toX, int toY){
+
         // Actually move piece
         view.removePiece(toX, toY);
         view.putPiece(board[fromY][fromX].getType(), playerTurn, toX, toY);
@@ -154,10 +163,12 @@ public class Controller implements ChessController {
             view.displayMessage("Check!");
         }
 
+        // Set hasMoved as true if needed
+        if (board[toY][toX] instanceof SpecialMovePiece)
+            ((SpecialMovePiece)board[toY][toX]).setHasMoved(true);
+
         // Change turn
         playerTurn = getOpponent();
-
-        return true;
     }
 
     private boolean collision(Position from, Position to) {
@@ -239,19 +250,17 @@ public class Controller implements ChessController {
         if (toY != fromY)
             return false;
 
-        if (!(toX == 6 || toX == 1))
+        if (!(toX == 6 || toX == 2))
             return false;
 
-        boolean bigCastle = toX == 1;
-        int rookX = bigCastle ? 0 : 7;
+        boolean bigCastle = toX == 2;
+        int rookFrom = bigCastle ? 0 : 7;
+        int rookTo = bigCastle ? 3 : 5;
 
         //check if pieces are castlelable and has already moved
-        if (!(board[fromY][fromX] instanceof King
-                && board[fromY][rookX] instanceof Rook)) {
-            if (((SpecialMovePiece) board[fromY][fromX]).getHasMoved()
-                    || ((SpecialMovePiece) board[fromY][rookX]).getHasMoved()) {
-                return false;
-            }
+        if (!(board[fromY][fromX] instanceof King && board[fromY][rookFrom] instanceof Rook)
+            || (((SpecialMovePiece) board[fromY][fromX]).getHasMoved()
+                || ((SpecialMovePiece) board[fromY][rookFrom]).getHasMoved())){
             return false;
         }
 
@@ -261,23 +270,14 @@ public class Controller implements ChessController {
         }
 
         // moving pieces
-        //king
-        view.putPiece(PieceType.KING, playerTurn, toX, toY);
-        view.removePiece(fromX, fromY);
-
+        //king (in endOfTurn)
         //rook
-        view.putPiece(PieceType.ROOK, playerTurn, bigCastle ? 2 : 5, toY);
-        view.removePiece((bigCastle ? 0 : 7), fromY);
+        view.putPiece(PieceType.ROOK, playerTurn, rookTo, toY);
+        view.removePiece(rookFrom, fromY);
+        board[toY][rookTo] = board[fromY][rookFrom];
+        board[fromY][rookFrom] = null;
+        ((SpecialMovePiece)board[toY][rookTo]).setHasMoved(true);
 
-        //king
-        board[toY][toX] = board[fromY][fromX];
-        board[fromY][fromX] = null;
-
-        //rook
-        board[toY][bigCastle ? 2 : 5] = board[fromY][bigCastle ? 0 : 7];
-        board[fromY][bigCastle ? 0 : 7] = null;
-
-        playerTurn = getOpponent();
         return true;
 
     }

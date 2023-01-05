@@ -6,6 +6,7 @@ import chess.PieceType;
 public abstract class SpecialMovePiece extends Piece {
     boolean hasMoved;
 
+
     public SpecialMovePiece(PlayerColor color, PieceType type) {
         super(color, type);
         this.hasMoved = false;
@@ -13,5 +14,8 @@ public abstract class SpecialMovePiece extends Piece {
 
     public boolean getHasMoved() {
         return hasMoved;
+    }
+    public void setHasMoved(boolean hasMoved) {
+        this.hasMoved = hasMoved;
     }
 }
