@@ -15,7 +15,6 @@ public class Controller implements ChessController {
 
     private PlayerColor playerTurn = PlayerColor.WHITE;
 
-
     @Override
     public void start(ChessView view) {
         this.view = view;
@@ -80,6 +79,24 @@ public class Controller implements ChessController {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
         return true;
 
+    }
+
+    public boolean isCellAttacked(PlayerColor by, int x, int y) {
+
+        if (x < 0 || x > 7 || y < 0 || y > 7) {
+            throw new RuntimeException("Invalid cell : x(" + x + "), y(" + y + ")!");
+        }
+
+        for (int line = 0; line < 8; ++line) {
+            for (int column = 0; column < 8; ++column) {
+                if (board[line][column] != null && board[line][column].getColor() == by &&
+                        board[line][column].canAttack(y - line, x - column)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
