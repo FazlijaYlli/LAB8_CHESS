@@ -13,6 +13,11 @@ public class Position {
     }
 
     public Position(int x, int y) {
+
+        if (x < 0 || x > 7 || y < 0 || y > 7) {
+            throw new RuntimeException("Invalid position (x : " + x + ", y : " + y + ")!");
+        }
+
         this.x = x;
         this.y = y;
     }

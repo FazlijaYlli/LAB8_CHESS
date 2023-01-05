@@ -39,12 +39,13 @@ public class Controller implements ChessController {
         if (board[fromY][fromX].getColor() != playerTurn)
             return false;
 
-        Position relative = new Position(toX - fromX, toY - fromY);
+        int relativeX = toX - fromX;
+        int relativeY = toY - fromY;
 
         if (board[toY][toX] == null) {
 
             // Move
-            if (!board[fromY][fromX].canMove(relative.getX(), relative.getY()))
+            if (!board[fromY][fromX].canMove(relativeX, relativeY))
                 return false;
         } else {
 
@@ -54,15 +55,15 @@ public class Controller implements ChessController {
             if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
                 return false;
 
-            if (!board[fromY][fromX].canAttack(relative.getX(), relative.getY()))
+            if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                 return false;
         }
 
         // Some pieces can't move over other pieces
         if (board[fromY][fromX].isCollisionable()) {
 
-            int directionX = relative.getX() == 0 ? 0 : relative.getX() / Math.abs(relative.getX());
-            int directionY = relative.getY() == 0 ? 0 : relative.getY() / Math.abs(relative.getY());
+            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
 
             int x = fromX + directionX, y = fromY + directionY;
 
