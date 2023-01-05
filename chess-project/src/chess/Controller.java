@@ -53,10 +53,12 @@ public class Controller implements ChessController {
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
+        Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
+        Position otherKingPos = playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
+
         /*if (nbChecks > 0) {
 
             boolean countered = false;
-            Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
 
             // Option 1 : Eating the piece that caused a check, which only possible if there's 1 checking piece
             if (nbChecks == 1) {
@@ -147,10 +149,7 @@ public class Controller implements ChessController {
         if (from.equals(blackKingPos)) blackKingPos = to;
 
         // Check
-        if ((nbChecks =
-                countCellAttacked(playerTurn, playerTurn ==
-                        PlayerColor.WHITE ? blackKingPos : whiteKingPos))
-                > 0) {
+        if ((nbChecks = countCellAttacked(playerTurn, otherKingPos)) > 0) {
             view.displayMessage("Check!");
         }
 
@@ -206,7 +205,7 @@ public class Controller implements ChessController {
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
                         && !collision(new Position(column, line), cell)) {
                     return true;
                 }
@@ -224,7 +223,7 @@ public class Controller implements ChessController {
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
                         && !collision(new Position(column, line), cell)) {
                     ++counter;
                 }
