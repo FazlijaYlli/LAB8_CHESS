@@ -7,10 +7,12 @@ public abstract class Piece {
     private final PlayerColor color;
     private final PieceType type;
 
-    boolean collisionable = true;
+    protected boolean collisionable;
+
     public Piece(PlayerColor color, PieceType type) {
         this.color = color;
         this.type = type;
+        collisionable = true;
     }
 
     public PlayerColor getColor() {

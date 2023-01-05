@@ -60,24 +60,7 @@ public class Controller implements ChessController {
         }
 
         // Some pieces can't move over other pieces
-        if (board[fromY][fromX].isCollisionable()) {
-
-            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
-            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
-
-            int x = fromX + directionX, y = fromY + directionY;
-
-            while (!(x == toX && y == toY)) {
-
-                // Check every cell until destination
-
-                if (board[y][x] != null)
-                    return false;
-
-                x += directionX;
-                y += directionY;
-            }
-        }
+        if (collision(from, to)) return false;
 
         // Actually move piece
 
@@ -92,18 +75,53 @@ public class Controller implements ChessController {
         if (from.equals(whiteKingPos)) whiteKingPos = to;
         if (from.equals(blackKingPos)) blackKingPos = to;
 
+        // Check
+        if (isCellAttacked(playerTurn, playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos)) {
+            view.displayMessage("Check!");
+        }
+
         // Change turn
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
 
         return true;
     }
 
-    public boolean isCellAttacked(PlayerColor by, Position cell) {
+    private boolean collision(Position from, Position to) {
 
+        if (board[from.getY()][from.getX()].isCollisionable()) {
+
+            int relativeX = to.getX() - from.getX();
+            int relativeY = to.getY() - from.getY();
+
+            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
+            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
+
+            int x = from.getX() + directionX, y = from.getY() + directionY;
+
+            while (!(x == to.getX() && y == to.getY())) {
+
+                // Check every cell until destination
+
+                if (board[y][x] != null)
+                    return true;
+
+                x += directionX;
+                y += directionY;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isCellAttacked(PlayerColor by, Position cell) {
+
+        // Altough not "optimized" for a standard chess game,
+        // it allows the creation of new pieces without any restraint
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)) {
+                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        && !collision(new Position(column, line), cell)) {
                     return true;
                 }
             }
