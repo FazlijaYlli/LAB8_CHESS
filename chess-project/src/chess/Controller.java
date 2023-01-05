@@ -1,5 +1,6 @@
 package chess;
 
+import chess.engine.Position;
 import chess.engine.pieces.*;
 
 import java.lang.Math;
@@ -8,6 +9,9 @@ public class Controller implements ChessController {
 
     private Piece[][] board;
     private ChessView view;
+
+    Position whiteKingPos;
+    Position blackKingPos;
 
     private PlayerColor playerTurn = PlayerColor.WHITE;
 
@@ -20,8 +24,11 @@ public class Controller implements ChessController {
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
+        Position from = new Position(fromX, fromY);
+        Position to = new Position(toX, toY);
+
         // Not moving isn't a move
-        if (toX == fromX && toY == fromY)
+        if (from.equals(to))
             return false;
 
         // Can't move empty space
@@ -32,14 +39,12 @@ public class Controller implements ChessController {
         if (board[fromY][fromX].getColor() != playerTurn)
             return false;
 
-        int relativeX = toX - fromX;
-        int relativeY = toY - fromY;
+        Position relative = new Position(toX - fromX, toY - fromY);
 
         if (board[toY][toX] == null) {
 
             // Move
-
-            if (!board[fromY][fromX].canMove(relativeX, relativeY))
+            if (!board[fromY][fromX].canMove(relative.getX(), relative.getY()))
                 return false;
         } else {
 
@@ -49,15 +54,15 @@ public class Controller implements ChessController {
             if (board[fromY][fromX].getColor() == board[toY][toX].getColor())
                 return false;
 
-            if (!board[fromY][fromX].canAttack(relativeX, relativeY))
+            if (!board[fromY][fromX].canAttack(relative.getX(), relative.getY()))
                 return false;
         }
 
         // Some pieces can't move over other pieces
         if (board[fromY][fromX].isCollisionable()) {
 
-            int directionX = relativeX == 0 ? 0 : relativeX / Math.abs(relativeX);
-            int directionY = relativeY == 0 ? 0 : relativeY / Math.abs(relativeY);
+            int directionX = relative.getX() == 0 ? 0 : relative.getX() / Math.abs(relative.getX());
+            int directionY = relative.getY() == 0 ? 0 : relative.getY() / Math.abs(relative.getY());
 
             int x = fromX + directionX, y = fromY + directionY;
 
@@ -81,6 +86,10 @@ public class Controller implements ChessController {
 
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
+
+        // Update King position
+        if (from.equals(whiteKingPos)) whiteKingPos = to;
+        if (from.equals(blackKingPos)) blackKingPos = to;
 
         // Change turn
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
@@ -124,6 +133,11 @@ public class Controller implements ChessController {
                 board[7 * (i % 2)][3] = new Queen(currentColor);
             } else {
                 board[7 * (i % 2)][4] = new King(currentColor);
+
+                switch (currentColor) {
+                    case WHITE -> whiteKingPos = new Position(4, 0);
+                    case BLACK -> blackKingPos = new Position(4, 7);
+                }
             }
         }
 
