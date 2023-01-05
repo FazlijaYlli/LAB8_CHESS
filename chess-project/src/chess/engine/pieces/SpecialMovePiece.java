@@ -8,6 +8,7 @@ public abstract class SpecialMovePiece extends Piece {
 
     public SpecialMovePiece(PlayerColor color, PieceType type) {
         super(color, type);
+        this.hasMoved = false;
     }
 
     public boolean getHasMoved() {

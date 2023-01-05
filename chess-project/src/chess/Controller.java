@@ -78,6 +78,12 @@ public class Controller implements ChessController {
         board[toY][toX] = board[fromY][fromX];
         board[fromY][fromX] = null;
 
+        if (toY == (playerTurn == PlayerColor.WHITE ? 1 : 0) * 7) {
+            view.removePiece(toX, toY);
+            view.putPiece(PieceType.QUEEN, playerTurn, toX, toY);
+            board[toY][toX] = new Queen(playerTurn);
+        }
+
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
         return true;
 
