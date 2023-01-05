@@ -11,7 +11,6 @@ import java.lang.Math;
 public class Controller implements ChessController {
 
     Piece[][] board;
-    int[][] attackBoard;
     ChessView view;
 
     @Override
@@ -105,16 +104,6 @@ public class Controller implements ChessController {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null) {
                     view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
-                }
-            }
-        }
-
-        // Setup attacks board
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
-                Piece p = board[line][column];
-                if (p != null) {
-
                 }
             }
         }
