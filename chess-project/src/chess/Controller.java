@@ -97,16 +97,12 @@ public class Controller implements ChessController {
         return true;
     }
 
-    public boolean isCellAttacked(PlayerColor by, int x, int y) {
-
-        if (x < 0 || x > 7 || y < 0 || y > 7) {
-            throw new RuntimeException("Invalid cell : x(" + x + "), y(" + y + ")!");
-        }
+    public boolean isCellAttacked(PlayerColor by, Position cell) {
 
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(y - line, x - column)) {
+                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)) {
                     return true;
                 }
             }
