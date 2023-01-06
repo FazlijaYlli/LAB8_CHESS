@@ -271,7 +271,10 @@ public class Controller implements ChessController {
             return false;
         }
 
-        for (int x = fromX; x != toX; x += bigCastle ? -1 : 1) {
+        if (isCellAttacked(getOpponent(), new Position(fromX, fromY)))
+            return false;
+
+        for (int x = fromX + (bigCastle ? -1 : 1); x != toX; x += bigCastle ? -1 : 1) {
             if (!(board[fromY][x] == null && !isCellAttacked(getOpponent(), new Position(x, fromY))))
                 return false;
         }
