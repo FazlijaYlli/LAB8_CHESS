@@ -4,7 +4,7 @@ import chess.PlayerColor;
 import chess.PieceType;
 
 public abstract class CastlingPiece extends Piece {
-    boolean hasMoved;
+    private boolean hasMoved;
 
 
     public CastlingPiece(PlayerColor color, PieceType type) {
@@ -15,7 +15,8 @@ public abstract class CastlingPiece extends Piece {
     public boolean getHasMoved() {
         return hasMoved;
     }
-    public void setHasMoved(boolean hasMoved) {
-        this.hasMoved = hasMoved;
+    
+    public void moved() {
+        hasMoved = true;
     }
 }

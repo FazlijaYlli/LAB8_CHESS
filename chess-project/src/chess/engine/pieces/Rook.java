@@ -9,7 +9,7 @@ public class Rook extends CastlingPiece {
         super(color, PieceType.ROOK);
     }
 
-    public boolean canMove(int x, int y){
-        return x+y != 0 && x*y == 0;
+    public boolean canMove(int x, int y) {
+        return x + y != 0 && x * y == 0;
     }
 }
