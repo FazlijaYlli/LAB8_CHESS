@@ -91,8 +91,8 @@ public class Controller implements ChessController {
      *
      * @param fromX x coordinate where the piece is
      * @param fromY y coordinate where the piece is
-     * @param toX x coordinate where the piece want to go
-     * @param toY y coordinate where the piece want to go
+     * @param toX   x coordinate where the piece want to go
+     * @param toY   y coordinate where the piece want to go
      * @return true if the move is correct
      */
     @Override
@@ -197,7 +197,7 @@ public class Controller implements ChessController {
      * Check if there is no collision between from to to
      *
      * @param from Position of the start piece
-     * @param to Position of the end piece
+     * @param to   Position of the end piece
      * @return true if the piece can go at the to position without colliding with anothere piece
      */
     private boolean collision(Position from, Position to) {
@@ -230,7 +230,7 @@ public class Controller implements ChessController {
     /**
      * Check if the cell is attacked by a piece of the attacker
      *
-     * @param by Color of the attacker
+     * @param by   Color of the attacker
      * @param cell Position of the piece to attack
      * @return true if the cell is attacked by at least one piece
      */
@@ -255,7 +255,7 @@ public class Controller implements ChessController {
      * Check conditions to "Castle" and do it if check pass
      *
      * @param from Position of the start piece
-     * @param to Position of the end piece
+     * @param to   Position of the end piece
      * @return true if the castle can happen
      * @link <a href="https://en.wikipedia.org/wiki/castling">Wikipedia : Castling</a>
      */
@@ -277,7 +277,8 @@ public class Controller implements ChessController {
         if (isCellAttacked(getOpponent(), from))
             return false;
 
-        for (int x = from.getX() + (queenSide ? -1 : 1); x != to.getX(); x += queenSide ? -1 : 1) {
+        int side = queenSide ? -1 : 1;
+        for (int x = from.getX() + side; x != to.getX() + side; x += side) {
             if (!(board[from.getY()][x] == null && !isCellAttacked(getOpponent(), new Position(x, from.getY()))))
                 return false;
         }
@@ -300,7 +301,7 @@ public class Controller implements ChessController {
      * Check conditions to do the "En Passant" and do it if check pass
      *
      * @param from Position of the start piece
-     * @param to Position of the end piece
+     * @param to   Position of the end piece
      * @return true if the "En Passant" can happen
      * @link <a href="https://en.wikipedia.org/wiki/En_passant">Wikipedia : En Passant</a>
      */
@@ -362,7 +363,7 @@ public class Controller implements ChessController {
      * Do all the action required to end the turn
      *
      * @param from Position of the start piece
-     * @param to Position of the end piece
+     * @param to   Position of the end piece
      */
     private void endOfTurn(Position from, Position to) {
 
@@ -539,7 +540,5 @@ public class Controller implements ChessController {
         }
 
         gameEnded = checkmate || stalemateByMoves || stalemateByPat;
-
-        System.out.printf("%d pieces remaining\n", piecesCounter);
     }
 }
