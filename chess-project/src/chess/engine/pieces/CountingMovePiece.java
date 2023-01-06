@@ -14,9 +14,6 @@ public abstract class CountingMovePiece extends Piece {
     public int getNbrOfMoves() {
         return nbrOfMoves;
     }
-    public void setNbrOfMoves(int nbrOfMoves) {
-        this.nbrOfMoves = nbrOfMoves;
-    }
     public void incrementNbrOfMoves() {
         ++nbrOfMoves;
     }
