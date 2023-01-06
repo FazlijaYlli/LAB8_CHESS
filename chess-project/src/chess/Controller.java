@@ -144,6 +144,28 @@ public class Controller implements ChessController {
                 if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                     return false;
             }
+
+            // Simulation du mouvement afin de vérifier s'il y a check après le mouvement.
+
+            Piece current = board[fromY][fromX];
+
+            // Si c'est le roi qui se déplace, on check si la case ou il se déplace n'est pas attaquée.
+            if (current instanceof King && isCellAttacked(playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, new Position(toX,toY))) {
+                return false;
+            }
+
+            // Si ce n'est pas le roi qui se déplace, on simule le mouvement et on vérifie si le roi n'est pas attaqué.
+            board[toY][toX] = current;
+            board[fromY][fromX] = null;
+
+            boolean check = isCellAttacked(playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, currentKingPos);
+
+            board[toY][toX] = null;
+            board[fromY][fromX] = current;
+
+            if(check) {
+                return false;
+            }
         }
 
         // Some pieces can't move over other pieces
