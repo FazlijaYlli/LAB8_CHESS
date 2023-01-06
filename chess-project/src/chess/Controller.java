@@ -61,8 +61,6 @@ public class Controller implements ChessController {
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
-        Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
-
         if (board[toY][toX] == null) {
 
             // Move
@@ -92,7 +90,7 @@ public class Controller implements ChessController {
             board[toY][toX] = board[fromY][fromX];
             board[fromY][fromX] = null;
 
-            boolean check = isCellAttacked(getOpponent(), currentKingPos);
+            boolean check = isCellAttacked(getOpponent(), currentPlayerKingPos());
 
             board[fromY][fromX] = board[toY][toX];
             board[toY][toX] = null;
@@ -106,8 +104,6 @@ public class Controller implements ChessController {
     }
 
     private void endOfTurn(Position from, Position to, int fromX, int fromY, int toX, int toY) {
-
-        Position otherKingPos = playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
 
         // Actually move piece
         view.removePiece(toX, toY);
@@ -131,7 +127,7 @@ public class Controller implements ChessController {
         if (from.equals(blackKingPos)) blackKingPos = to;
 
         // Check
-        if ((nbChecks = countCellAttacked(playerTurn, otherKingPos)) > 0) {
+        if ((nbChecks = countCellAttacked(playerTurn, opponentPlayerKingPos())) > 0) {
             view.displayMessage("Check!");
         }
 
@@ -174,6 +170,14 @@ public class Controller implements ChessController {
 
     PlayerColor getOpponent() {
         return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
+
+    Position currentPlayerKingPos() {
+        return playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
+    }
+
+    Position opponentPlayerKingPos() {
+        return playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
     }
 
     private void promotion(int toX, int toY) {
@@ -270,7 +274,24 @@ public class Controller implements ChessController {
                 && Math.abs(posLastMove.getX() - fromX) == 1
                 && board[fromY][fromX].canAttack(toX - fromX, toY - fromY)) {
 
+
+            //Simulation
+
             int relativeY = playerTurn == PlayerColor.WHITE ? -1 : 1;
+
+            board[toY][toX] = board[fromY][fromX];
+            board[fromY][fromX] = null;
+            Piece tmp = board[toY + relativeY][toX];
+            board[toY + relativeY][toX] = null;
+
+            boolean check = isCellAttacked(getOpponent(), currentPlayerKingPos());
+
+            board[fromY][fromX] = board[toY][toX];
+            board[toY][toX] = null;
+            board[toY + relativeY][toX] = tmp;
+
+            if (check) return false;
+
             view.removePiece(toX, toY + relativeY);
             board[toY + relativeY][toX] = null;
             return true;
