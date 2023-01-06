@@ -16,6 +16,9 @@ public class Controller implements ChessController {
 
     private PlayerColor playerTurn;
 
+    private boolean gameEnded;
+    private int piecesCounter;
+
     /**
      * Start the view according to the view
      *
@@ -35,6 +38,8 @@ public class Controller implements ChessController {
 
         board = new Piece[8][8];
         playerTurn = PlayerColor.WHITE;
+        gameEnded = false;
+        piecesCounter = 0;
 
         // Back Pieces
 
@@ -42,13 +47,18 @@ public class Controller implements ChessController {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
 
             board[7 * (i % 2)][7 * (i > 1 ? 1 : 0)] = new Rook(currentColor);
+            ++piecesCounter;
             board[7 * (i % 2)][1 + 5 * (i > 1 ? 1 : 0)] = new Knight(currentColor);
+            ++piecesCounter;
             board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
+            ++piecesCounter;
 
             if (i > 1) {
                 board[7 * (i % 2)][3] = new Queen(currentColor);
+                ++piecesCounter;
             } else {
                 board[7 * (i % 2)][4] = new King(currentColor);
+                ++piecesCounter;
 
                 switch (currentColor) {
                     case WHITE -> whiteKingPos = new Position(4, 0);
@@ -62,6 +72,7 @@ public class Controller implements ChessController {
         for (int i = 0; i < 16; ++i) {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
             board[1 + 5 * (i % 2)][i % 8 - (i % 2) + i / 8] = new Pawn(currentColor);
+            ++piecesCounter;
         }
 
         // Put pieces on view to be visible
@@ -86,6 +97,8 @@ public class Controller implements ChessController {
      */
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
+
+        if (gameEnded) return false;
 
         Position from = new Position(fromX, fromY);
         Position to = new Position(toX, toY);
@@ -143,13 +156,20 @@ public class Controller implements ChessController {
         } else {
 
             // Simulation to prevent self-check
+            boolean check;
+
+            Piece attackedPiece = board[toY][toX];
             board[toY][toX] = board[fromY][fromX];
             board[fromY][fromX] = null;
 
-            boolean check = isCellAttacked(getOpponent(), currentPlayerKingPos());
+            if (board[toY][toX] instanceof King) {
+                check = isCellAttacked(getOpponent(), to);
+            } else {
+                check = isCellAttacked(getOpponent(), currentPlayerKingPos());
+            }
 
             board[fromY][fromX] = board[toY][toX];
-            board[toY][toX] = null;
+            board[toY][toX] = attackedPiece;
 
             if (check) return false;
         }
@@ -288,7 +308,8 @@ public class Controller implements ChessController {
 
         if (lastMovePos == null) return false;
 
-        if (board[lastMovePos.getY()][lastMovePos.getX()] instanceof Pawn
+        if (board[from.getY()][from.getX()] instanceof Pawn
+                && board[lastMovePos.getY()][lastMovePos.getX()] instanceof Pawn
                 && ((CountingMovePiece) board[lastMovePos.getY()][lastMovePos.getX()]).getNbMoves() == 1
                 && lastMovePos.getY() == from.getY()
                 && Math.abs(lastMovePos.getX() - from.getX()) == 1
@@ -314,6 +335,7 @@ public class Controller implements ChessController {
             }
 
             view.removePiece(to.getX(), to.getY() + relativeY);
+            --piecesCounter;
 
             endOfTurn(from, to);
 
@@ -345,6 +367,7 @@ public class Controller implements ChessController {
     private void endOfTurn(Position from, Position to) {
 
         // Move the piece
+        if (board[to.getY()][to.getX()] != null) --piecesCounter;
         view.putPiece(board[from.getY()][from.getX()].getType(), playerTurn, to.getX(), to.getY());
         view.removePiece(from.getX(), from.getY());
 
@@ -363,11 +386,6 @@ public class Controller implements ChessController {
         if (from.equals(whiteKingPos)) whiteKingPos = to;
         if (from.equals(blackKingPos)) blackKingPos = to;
 
-        // Check
-        if (isCellAttacked(playerTurn, opponentPlayerKingPos())) {
-            view.displayMessage("Check!");
-        }
-
         // Increment moves where needed
         if (board[to.getY()][to.getX()] instanceof CastlingPiece)
             ((CastlingPiece) board[to.getY()][to.getX()]).moved();
@@ -377,5 +395,151 @@ public class Controller implements ChessController {
 
         // Change turn
         playerTurn = getOpponent();
+
+        // Check
+        boolean check;
+        if (check = isCellAttacked(getOpponent(), currentPlayerKingPos())) {
+            view.displayMessage("Check!");
+        }
+
+        // End conditions
+        boolean stalemateByPat = false;
+        boolean stalemateByMoves = false;
+        boolean checkmate = false;
+
+        // Stalemate : Pat
+        if (piecesCounter < 5) {
+            // No need to look for the 2 Kings
+            Piece[] livingPieces = new Piece[2];
+
+            int i = 0;
+            int cell = -1;
+            for (int line = 0; line < 8; ++line) {
+                for (int column = 0; column < 8; ++column) {
+                    if (board[line][column] != null && !(board[line][column] instanceof King)) {
+
+                        livingPieces[i] = board[line][column];
+
+                        ++i;
+
+                        // Stalemate by Pat's last case requires 2 bishops on opposite color cells
+                        if (livingPieces[i - 1] instanceof Bishop) {
+                            if (cell < 0) {
+                                cell = (line + column) % 2;
+                            } else {
+                                if (cell == (line + column) % 2) {
+                                    ++i; //By putting i on 3, it can't be Pat
+                                }
+                            }
+                        }
+                    }
+
+                    if (i >= 2) break;
+                }
+                if (i >= 2) break;
+            }
+
+            stalemateByPat = i == 0 // King vs King
+                    // King vs King + 1
+                    || (i == 1
+                    // +1 is either Bishop or Knight
+                    && (livingPieces[0] instanceof Bishop || livingPieces[0] instanceof Knight))
+                    // King + 1 vs King + 1
+                    || (i == 2
+                    // Both +1 must be Bishops that are on opposite color cells
+                    // Opposite color cells are checked in the above loops
+                    && livingPieces[0] instanceof Bishop && livingPieces[1] instanceof Bishop);
+        }
+
+        // Stalemate : Moves available ?
+        // There is no verification for Castling since it's an impossible move when there's a possibility of stalemate
+        boolean moveFound = false;
+        for (int line = 0; line < 8; ++line) {
+            if (stalemateByPat) break;
+
+            for (int column = 0; column < 8; ++column) {
+                if (board[line][column] != null && board[line][column].getColor() == playerTurn) {
+
+                    // Simulation
+
+                    for (int toY = 0; toY < 8; ++toY) {
+                        for (int toX = 0; toX < 8; ++toX) {
+
+                            // Not on self
+                            if (toY == line && toX == column) continue;
+
+                            // Piece on destination
+                            boolean enPassantFound = false;
+                            if (board[toY][toX] != null) {
+
+                                // Cannot attack ally
+                                if (board[toY][toX].getColor() == playerTurn) continue;
+
+                                // Attack on opponent cell
+                                moveFound = board[line][column].canAttack(toX - column, toY - line)
+                                        && !collision(new Position(column, line), new Position(toX, toY));
+                            } else {
+
+                                // Move on empty cell
+                                moveFound = board[line][column].canMove(toX - column, toY - line)
+                                        && !collision(new Position(column, line), new Position(toX, toY));
+
+                                // En Passant possibility
+                                if (!moveFound) moveFound = enPassantFound = toY - line == 1
+                                        && toX == lastMovePos.getX()
+                                        && board[line][column] instanceof Pawn
+                                        && board[lastMovePos.getY()][lastMovePos.getX()] instanceof Pawn
+                                        && lastMovePos.getY() == line
+                                        && Math.abs(lastMovePos.getX() - column) == 1;
+                            }
+
+                            if (moveFound) {
+                                // Self-check prevention
+                                Piece enPassantPiece = null;
+                                if (enPassantFound) {
+                                    enPassantPiece = board[lastMovePos.getY()][lastMovePos.getX()];
+                                    board[lastMovePos.getY()][lastMovePos.getX()] = null;
+                                }
+
+                                Piece attackedPiece = board[toY][toX];
+                                board[toY][toX] = board[line][column];
+                                board[line][column] = null;
+
+                                if (board[toY][toX] instanceof King) {
+                                    moveFound = !isCellAttacked(getOpponent(), new Position(toX, toY));
+                                } else {
+                                    moveFound = !isCellAttacked(getOpponent(), currentPlayerKingPos());
+                                }
+
+                                // Reset simulation
+                                if (enPassantFound) {
+                                    board[lastMovePos.getY()][lastMovePos.getX()] = enPassantPiece;
+                                }
+
+                                board[line][column] = board[toY][toX];
+                                board[toY][toX] = attackedPiece;
+                            }
+
+                            if (moveFound) break;
+                        }
+                        if (moveFound) break;
+                    }
+                }
+                if (moveFound) break;
+            }
+            if (moveFound) break;
+        }
+        stalemateByMoves = !moveFound;
+
+        // Checkmate
+        if (checkmate = stalemateByMoves && check) {
+            view.displayMessage("Checkmate!");
+        } else if (stalemateByMoves || stalemateByPat) {
+            view.displayMessage("Stalemate!");
+        }
+
+        gameEnded = checkmate || stalemateByMoves || stalemateByPat;
+
+        System.out.printf("%d pieces remaining\n", piecesCounter);
     }
 }

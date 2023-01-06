@@ -36,12 +36,6 @@ public abstract class Piece implements ChessView.UserChoice {
         return type;
     }
 
-    public void move(int x, int y) {
-        if (x == 0 && y == 0) {
-            throw new IllegalArgumentException("Not moving isn't a move!");
-        }
-    }
-
     /**
      * @return The class name of the piece
      */
