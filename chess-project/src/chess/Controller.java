@@ -16,12 +16,20 @@ public class Controller implements ChessController {
 
     private PlayerColor playerTurn;
 
+    /**
+     * Start the view according to the view
+     *
+     * @param view The view to use
+     */
     @Override
     public void start(ChessView view) {
         this.view = view;
         view.startView();
     }
 
+    /**
+     * Initialise a new chess game
+     */
     @Override
     public void newGame() {
 
@@ -67,6 +75,15 @@ public class Controller implements ChessController {
         }
     }
 
+    /**
+     * Methode to check if the input move is correct. If it's correct, it moves the piece.
+     *
+     * @param fromX x coordinate where the piece is
+     * @param fromY y coordinate where the piece is
+     * @param toX x coordinate where the piece want to go
+     * @param toY y coordinate where the piece want to go
+     * @return true if the move is correct
+     */
     @Override
     public boolean move(int fromX, int fromY, int toX, int toY) {
 
@@ -142,18 +159,27 @@ public class Controller implements ChessController {
         return true;
     }
 
+    /**
+     * @return The color of the opponent
+     */
     private PlayerColor getOpponent() {
         return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
 
+    /**
+     * @return The current player's King's position
+     */
     private Position currentPlayerKingPos() {
         return playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
     }
 
-    private Position opponentPlayerKingPos() {
-        return playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
-    }
-
+    /**
+     * Check if there is no collision between from to to
+     *
+     * @param from Position of the start piece
+     * @param to Position of the end piece
+     * @return true if the piece can go at the to position without colliding with anothere piece
+     */
     private boolean collision(Position from, Position to) {
 
         if (board[from.getY()][from.getX()].isCollisionable()) {
@@ -181,6 +207,13 @@ public class Controller implements ChessController {
         return false;
     }
 
+    /**
+     * Check if the cell is attacked by a piece of the attacker
+     *
+     * @param by Color of the attacker
+     * @param cell Position of the piece to attack
+     * @return true if the cell is attacked by at least one piece
+     */
     private boolean isCellAttacked(PlayerColor by, Position cell) {
 
         // Altough not "optimized" for a standard chess game,
@@ -198,6 +231,14 @@ public class Controller implements ChessController {
         return false;
     }
 
+    /**
+     * Check conditions to "Castle" and do it if check pass
+     *
+     * @param from Position of the start piece
+     * @param to Position of the end piece
+     * @return true if the castle can happen
+     * @link <a href="https://en.wikipedia.org/wiki/castling">Wikipedia : Castling</a>
+     */
     private boolean castling(Position from, Position to) {
 
         if (!(to.getX() == 6 || to.getX() == 2))
@@ -235,6 +276,14 @@ public class Controller implements ChessController {
         return true;
     }
 
+    /**
+     * Check conditions to do the "En Passant" and do it if check pass
+     *
+     * @param from Position of the start piece
+     * @param to Position of the end piece
+     * @return true if the "En Passant" can happen
+     * @link <a href="https://en.wikipedia.org/wiki/En_passant">Wikipedia : En Passant</a>
+     */
     private boolean enPassant(Position from, Position to) {
 
         if (lastMovePos == null) return false;
@@ -274,6 +323,11 @@ public class Controller implements ChessController {
         return false;
     }
 
+    /**
+     * Promote a Pawn to a Rook, a Knight, a Bishop or a Queen
+     *
+     * @param to Position where the Pawn is going
+     */
     private void promotion(Position to) {
         Piece promotedPiece = view.askUser("Promotion possible !", "Quelle pièce souhaitez-vous obtenir ?",
                 new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
@@ -282,6 +336,12 @@ public class Controller implements ChessController {
         board[to.getY()][to.getX()] = promotedPiece;
     }
 
+    /**
+     * Do all the action required to end the turn
+     *
+     * @param from Position of the start piece
+     * @param to Position of the end piece
+     */
     private void endOfTurn(Position from, Position to) {
 
         // Move the piece
