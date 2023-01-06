@@ -16,6 +16,7 @@ public class Controller implements ChessController {
     private int nbChecks;
     private Piece lastMove;
     private Position posLastMove;
+    private Position oldPosLastMove;
 
     private PlayerColor playerTurn;
 
@@ -60,12 +61,14 @@ public class Controller implements ChessController {
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
 
-        /*if (nbChecks > 0) {
+        Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
+
+        if (nbChecks > 0) {
 
             boolean countered = false;
-            Position currentKingPos = playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
 
-            // Option 1 : Eating the piece that caused a check, which only possible if there's 1 checking piece
+            // Option 1 : Eating the piece that caused a check, which is only possible if there's 1 checking piece
+            // Option 2 : Bloakcing the attack of the piece that caused the check, also on 1 check only
             if (nbChecks == 1) {
                 // There are 3 scenarios for this option :
                 // Scenario 1 : The piece that moved checked the King
@@ -73,34 +76,47 @@ public class Controller implements ChessController {
                         && lastMove.equals(board[toY][toX])
                         && board[fromY][fromX].canAttack(relativeX, relativeY);
 
+                if (!countered && lastMove.isCollisionable()) {
+                    // Blocking the attack
+                    countered = lastMove.canAttack(toX - posLastMove.getX(), toY - posLastMove.getY());
+                }
+
                 // Scenario 2 : The piece that moved created a discovered check
                 if (!countered) {
-                    int findX = currentKingPos.getX() - posLastMove.getX();
-                    int findY = currentKingPos.getY() - posLastMove.getY();
+                    int findX = currentKingPos.getX() - oldPosLastMove.getX();
+                    int findY = currentKingPos.getY() - oldPosLastMove.getY();
 
                     int directionX = findX == 0 ? 0 : findX / Math.abs(findX);
                     int directionY = findY == 0 ? 0 : findY / Math.abs(findY);
 
-                    int x = posLastMove.getX() + directionX, y = posLastMove.getY() + directionY;
+                    int x = oldPosLastMove.getX() + directionX, y = oldPosLastMove.getY() + directionY;
 
                     while (!(x < 0 || x > 7 || y < 0 || y > 7) && board[y][x] == null) {
 
-                        x += directionX;
-                        y += directionY;
+                        x -= directionX;
+                        y -= directionY;
                     }
 
-                    countered = board[y][x].canAttack(currentKingPos.getX() - x, currentKingPos.getY() - y);
+                    if (board[y][x] != null &&
+                            board[y][x].canAttack(currentKingPos.getX() - x, currentKingPos.getY() - y)) {
+                        countered = y == toY && x == toX && board[fromY][fromX].canAttack(relativeX, relativeY);
 
-                    // Scenario 3 : An En Passant created a discovered check via the eaten pawn
-                    if (!countered) {
-                        // TODO
+                        if (!countered && board[y][x].isCollisionable()) {
+                            // Blocking the attack
+                            countered = board[y][x].canAttack(toX - x, toY - y);
+                        }
                     }
                 }
 
-                // Option 2 : Blocking the move, also requires 1 checking piece
-                if (lastMove.isCollisionable()) {
+                // Scenario 3 : An En Passant created a discovered check via the eaten pawn
+                if (!countered) {
+                    // TODO (Eating the piece)
 
+                    if (!countered /*&& ?.isCollisionable()*/) {
+                        // TODO (Blocking the attack)
+                    }
                 }
+
             }
 
             // Option 3 : Moving the king out of harm
@@ -110,7 +126,7 @@ public class Controller implements ChessController {
 
             if (!countered) return false;
 
-        } else {*/
+        } else {
 
             if (board[toY][toX] == null) {
 
@@ -128,7 +144,29 @@ public class Controller implements ChessController {
                 if (!board[fromY][fromX].canAttack(relativeX, relativeY))
                     return false;
             }
-        //}
+
+            // Simulation du mouvement afin de vérifier s'il y a check après le mouvement.
+
+            Piece current = board[fromY][fromX];
+
+            // Si c'est le roi qui se déplace, on check si la case ou il se déplace n'est pas attaquée.
+            if (current instanceof King && isCellAttacked(playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, new Position(toX,toY))) {
+                return false;
+            }
+
+            // Si ce n'est pas le roi qui se déplace, on simule le mouvement et on vérifie si le roi n'est pas attaqué.
+            board[toY][toX] = current;
+            board[fromY][fromX] = null;
+
+            boolean check = isCellAttacked(playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, currentKingPos);
+
+            board[toY][toX] = null;
+            board[fromY][fromX] = current;
+
+            if(check) {
+                return false;
+            }
+        }
 
         // Some pieces can't move over other pieces
         if (collision(from, to)) return false;
@@ -139,6 +177,8 @@ public class Controller implements ChessController {
     }
 
     private void endOfTurn(Position from, Position to, int fromX, int fromY, int toX, int toY){
+
+        Position otherKingPos = playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
 
         // Actually move piece
         view.removePiece(toX, toY);
@@ -155,16 +195,14 @@ public class Controller implements ChessController {
         // Update last move
         lastMove = board[toY][toX];
         posLastMove = to;
+        oldPosLastMove = from;
 
         // Update King position
         if (from.equals(whiteKingPos)) whiteKingPos = to;
         if (from.equals(blackKingPos)) blackKingPos = to;
 
         // Check
-        if ((nbChecks =
-                countCellAttacked(playerTurn, playerTurn ==
-                        PlayerColor.WHITE ? blackKingPos : whiteKingPos))
-                > 0) {
+        if ((nbChecks = countCellAttacked(playerTurn, otherKingPos)) > 0) {
             view.displayMessage("Check!");
         }
 
@@ -224,7 +262,7 @@ public class Controller implements ChessController {
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
                         && !collision(new Position(column, line), cell)) {
                     return true;
                 }
@@ -242,7 +280,7 @@ public class Controller implements ChessController {
         for (int line = 0; line < 8; ++line) {
             for (int column = 0; column < 8; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getY() - line, cell.getX() - column)
+                        board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
                         && !collision(new Position(column, line), cell)) {
                     ++counter;
                 }
