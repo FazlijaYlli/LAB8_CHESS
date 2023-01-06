@@ -3,7 +3,7 @@ package chess.engine.pieces;
 import chess.PieceType;
 import chess.PlayerColor;
 
-public class King extends SpecialMovePiece {
+public class King extends CastlingPiece {
     public King(PlayerColor color) {
         super(color, PieceType.KING);
     }

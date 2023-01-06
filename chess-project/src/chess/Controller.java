@@ -4,7 +4,6 @@ import chess.engine.Position;
 import chess.engine.pieces.*;
 
 import java.lang.Math;
-import java.util.Scanner;
 
 public class Controller implements ChessController {
 
@@ -47,6 +46,12 @@ public class Controller implements ChessController {
         // Special moves
         if (board[fromY][fromX] instanceof King) {
             if (castling(fromX, fromY, toX, toY)){
+                endOfTurn(from,to,fromX,fromY,toX,toY);
+                return true;
+            }
+        }
+        if (board[fromY][fromX] instanceof Pawn) {
+            if (enPassant(fromX, fromY, toX, toY, lastMove, posLastMove)){
                 endOfTurn(from,to,fromX,fromY,toX,toY);
                 return true;
             }
@@ -149,7 +154,7 @@ public class Controller implements ChessController {
 
         // Update last move
         lastMove = board[toY][toX];
-        posLastMove = from;
+        posLastMove = to;
 
         // Update King position
         if (from.equals(whiteKingPos)) whiteKingPos = to;
@@ -163,9 +168,11 @@ public class Controller implements ChessController {
             view.displayMessage("Check!");
         }
 
-        // Set hasMoved as true if needed
-        if (board[toY][toX] instanceof SpecialMovePiece)
-            ((SpecialMovePiece)board[toY][toX]).setHasMoved(true);
+        // increment moves if needed
+        if (board[toY][toX] instanceof CastlingPiece)
+            ((CastlingPiece)board[toY][toX]).setHasMoved(true);
+        if (board[toY][toX] instanceof CountingMovePiece)
+            ((CountingMovePiece)board[toY][toX]).incrementNbrOfMoves();
 
         // Change turn
         playerTurn = getOpponent();
@@ -245,7 +252,7 @@ public class Controller implements ChessController {
         return counter;
     }
 
-    boolean castling(int fromX, int fromY, int toX, int toY) {
+    private boolean castling(int fromX, int fromY, int toX, int toY) {
 
         if (toY != fromY)
             return false;
@@ -259,8 +266,8 @@ public class Controller implements ChessController {
 
         //check if pieces are castlelable and has already moved
         if (!(board[fromY][fromX] instanceof King && board[fromY][rookFrom] instanceof Rook)
-            || (((SpecialMovePiece) board[fromY][fromX]).getHasMoved()
-                || ((SpecialMovePiece) board[fromY][rookFrom]).getHasMoved())){
+            || (((CountingMovePiece) board[fromY][fromX]).getNbrOfMoves() > 0
+                || ((CountingMovePiece) board[fromY][rookFrom]).getNbrOfMoves() > 0)){
             return false;
         }
 
@@ -276,10 +283,29 @@ public class Controller implements ChessController {
         view.removePiece(rookFrom, fromY);
         board[toY][rookTo] = board[fromY][rookFrom];
         board[fromY][rookFrom] = null;
-        ((SpecialMovePiece)board[toY][rookTo]).setHasMoved(true);
+        ((CastlingPiece)board[toY][rookTo]).setHasMoved(true);
 
         return true;
 
+    }
+
+    private boolean enPassant(int fromX, int fromY, int toX, int toY, Piece lastMove, Position posLastMove){
+
+        //if true, en passant is possible
+        if(lastMove instanceof Pawn
+            && lastMove.getColor() == getOpponent()
+            && board[toY][toX] == null
+            && posLastMove.getY() == fromY
+            && ((CountingMovePiece)lastMove).getNbrOfMoves() == 1
+            && Math.abs(posLastMove.getX()-fromX) == 1
+            && board[fromY][fromX].canAttack(toX-fromX,toY-fromY)){
+
+            int relativeY = playerTurn == PlayerColor.WHITE ? -1 : 1;
+            view.removePiece(toX, toY + relativeY);
+            board[toY + relativeY][toX] = null;
+            return true;
+        }
+            return false;
     }
 
     @Override
