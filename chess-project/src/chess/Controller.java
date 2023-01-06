@@ -266,8 +266,8 @@ public class Controller implements ChessController {
 
         //check if pieces are castlelable and has already moved
         if (!(board[fromY][fromX] instanceof King && board[fromY][rookFrom] instanceof Rook)
-            || (((CountingMovePiece) board[fromY][fromX]).getNbrOfMoves() > 0
-                || ((CountingMovePiece) board[fromY][rookFrom]).getNbrOfMoves() > 0)){
+            || (((CastlingPiece) board[fromY][fromX]).getHasMoved()
+                || ((CastlingPiece) board[fromY][rookFrom]).getHasMoved())){
             return false;
         }
 
