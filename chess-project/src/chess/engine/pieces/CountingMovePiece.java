@@ -4,17 +4,18 @@ import chess.PlayerColor;
 import chess.PieceType;
 
 public abstract class CountingMovePiece extends Piece {
-    int nbrOfMoves;
+    private int nbMoves;
 
     public CountingMovePiece(PlayerColor color, PieceType type) {
         super(color, type);
-        this.nbrOfMoves = 0;
+        this.nbMoves = 0;
     }
 
-    public int getNbrOfMoves() {
-        return nbrOfMoves;
+    public int getNbMoves() {
+        return nbMoves;
     }
-    public void incrementNbrOfMoves() {
-        ++nbrOfMoves;
+
+    public void incrementNbMoves() {
+        ++nbMoves;
     }
 }
