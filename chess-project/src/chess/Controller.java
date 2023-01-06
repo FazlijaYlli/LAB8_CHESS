@@ -12,11 +12,7 @@ public class Controller implements ChessController {
 
     private Position whiteKingPos;
     private Position blackKingPos;
-
-    private int nbChecks;
-    private Piece lastMove;
-    private Position posLastMove;
-    private Position oldPosLastMove;
+    private Position lastMovePos;
 
     private PlayerColor playerTurn;
 
@@ -24,6 +20,51 @@ public class Controller implements ChessController {
     public void start(ChessView view) {
         this.view = view;
         view.startView();
+    }
+
+    @Override
+    public void newGame() {
+
+        board = new Piece[8][8];
+        playerTurn = PlayerColor.WHITE;
+
+        // Back Pieces
+
+        for (int i = 0; i < 4; ++i) {
+            PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
+
+            board[7 * (i % 2)][7 * (i > 1 ? 1 : 0)] = new Rook(currentColor);
+            board[7 * (i % 2)][1 + 5 * (i > 1 ? 1 : 0)] = new Knight(currentColor);
+            board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
+
+            if (i > 1) {
+                board[7 * (i % 2)][3] = new Queen(currentColor);
+            } else {
+                board[7 * (i % 2)][4] = new King(currentColor);
+
+                switch (currentColor) {
+                    case WHITE -> whiteKingPos = new Position(4, 0);
+                    case BLACK -> blackKingPos = new Position(4, 7);
+                }
+            }
+        }
+
+        // Pawns
+
+        for (int i = 0; i < 16; ++i) {
+            PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
+            board[1 + 5 * (i % 2)][i % 8 - (i % 2) + i / 8] = new Pawn(currentColor);
+        }
+
+        // Put pieces on view to be visible
+
+        for (int line = 0; line < 8; ++line) {
+            for (int column = 0; column < 8; ++column) {
+                if (board[line][column] != null) {
+                    view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
+                }
+            }
+        }
     }
 
     @Override
@@ -45,18 +86,22 @@ public class Controller implements ChessController {
             return false;
 
         // Special moves
+
         if (board[fromY][fromX] instanceof King) {
-            if (castling(fromX, fromY, toX, toY)) {
-                endOfTurn(from, to, fromX, fromY, toX, toY);
+            if (castling(from, to)) {
+                endOfTurn(from, to);
                 return true;
             }
         }
+
         if (board[fromY][fromX] instanceof Pawn) {
-            if (enPassant(fromX, fromY, toX, toY, lastMove, posLastMove)) {
-                endOfTurn(from, to, fromX, fromY, toX, toY);
+            if (enPassant(from, to)) {
+                endOfTurn(from, to);
                 return true;
             }
         }
+
+        // Normal move
 
         int relativeX = toX - fromX;
         int relativeY = toY - fromY;
@@ -98,47 +143,21 @@ public class Controller implements ChessController {
             if (check) return false;
         }
 
-        endOfTurn(from, to, fromX, fromY, toX, toY);
+        endOfTurn(from, to);
 
         return true;
     }
 
-    private void endOfTurn(Position from, Position to, int fromX, int fromY, int toX, int toY) {
+    private PlayerColor getOpponent() {
+        return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
 
-        // Actually move piece
-        view.removePiece(toX, toY);
-        view.putPiece(board[fromY][fromX].getType(), playerTurn, toX, toY);
-        view.removePiece(fromX, fromY);
+    private Position currentPlayerKingPos() {
+        return playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
+    }
 
-        board[toY][toX] = board[fromY][fromX];
-        board[fromY][fromX] = null;
-
-        if (toY == (playerTurn == PlayerColor.WHITE ? 7 : 0) && board[toY][toX] instanceof Pawn) {
-            promotion(toX, toY);
-        }
-
-        // Update last move
-        lastMove = board[toY][toX];
-        posLastMove = to;
-        oldPosLastMove = from;
-
-        // Update King position
-        if (from.equals(whiteKingPos)) whiteKingPos = to;
-        if (from.equals(blackKingPos)) blackKingPos = to;
-
-        // Check
-        if ((nbChecks = countCellAttacked(playerTurn, opponentPlayerKingPos())) > 0) {
-            view.displayMessage("Check!");
-        }
-
-        // increment moves if needed
-        if (board[toY][toX] instanceof CastlingPiece)
-            ((CastlingPiece) board[toY][toX]).setHasMoved(true);
-        if (board[toY][toX] instanceof CountingMovePiece)
-            ((CountingMovePiece) board[toY][toX]).incrementNbrOfMoves();
-
-        // Change turn
-        playerTurn = getOpponent();
+    private Position opponentPlayerKingPos() {
+        return playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
     }
 
     private boolean collision(Position from, Position to) {
@@ -168,26 +187,6 @@ public class Controller implements ChessController {
         return false;
     }
 
-    PlayerColor getOpponent() {
-        return playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
-    }
-
-    Position currentPlayerKingPos() {
-        return playerTurn == PlayerColor.WHITE ? whiteKingPos : blackKingPos;
-    }
-
-    Position opponentPlayerKingPos() {
-        return playerTurn == PlayerColor.WHITE ? blackKingPos : whiteKingPos;
-    }
-
-    private void promotion(int toX, int toY) {
-        Piece toPromote = view.askUser("Promotion disponible !", "Quelle pièce souhaitez-vous obtenir ?",
-                new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
-        view.removePiece(toX, toY);
-        view.putPiece(toPromote.getType(), playerTurn, toX, toY);
-        board[toY][toX] = toPromote;
-    }
-
     private boolean isCellAttacked(PlayerColor by, Position cell) {
 
         // Altough not "optimized" for a standard chess game,
@@ -205,143 +204,123 @@ public class Controller implements ChessController {
         return false;
     }
 
-    private int countCellAttacked(PlayerColor by, Position cell) {
+    private boolean castling(Position from, Position to) {
 
-        // Uses same code as isCellAttacked above except it counts the number of attacks
-        int counter = 0;
-
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
-                if (board[line][column] != null && board[line][column].getColor() == by &&
-                        board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
-                        && !collision(new Position(column, line), cell)) {
-                    ++counter;
-                }
-            }
-        }
-
-        return counter;
-    }
-
-    private boolean castling(int fromX, int fromY, int toX, int toY) {
-
-        if (toY != fromY)
+        if (!to.equals(from))
             return false;
 
-        if (!(toX == 6 || toX == 2))
+        if (!(to.getX() == 6 || to.getX() == 2))
             return false;
 
-        boolean bigCastle = toX == 2;
+        boolean bigCastle = to.getX() == 2;
         int rookFrom = bigCastle ? 0 : 7;
         int rookTo = bigCastle ? 3 : 5;
 
         //check if pieces are castlelable and has already moved
-        if (!(board[fromY][fromX] instanceof King && board[fromY][rookFrom] instanceof Rook)
-                || (((CastlingPiece) board[fromY][fromX]).getHasMoved()
-                || ((CastlingPiece) board[fromY][rookFrom]).getHasMoved())) {
+        if (!(board[from.getY()][from.getX()] instanceof King && board[from.getY()][rookFrom] instanceof Rook)
+                || (((CastlingPiece) board[from.getY()][from.getX()]).getHasMoved()
+                || ((CastlingPiece) board[from.getY()][rookFrom]).getHasMoved())) {
             return false;
         }
 
-        if (isCellAttacked(getOpponent(), new Position(fromX, fromY)))
+        if (isCellAttacked(getOpponent(), new Position(from.getX(), from.getY())))
             return false;
 
-        for (int x = fromX + (bigCastle ? -1 : 1); x != toX; x += bigCastle ? -1 : 1) {
-            if (!(board[fromY][x] == null && !isCellAttacked(getOpponent(), new Position(x, fromY))))
+        for (int x = from.getX() + (bigCastle ? -1 : 1); x != to.getX(); x += bigCastle ? -1 : 1) {
+            if (!(board[from.getY()][x] == null && !isCellAttacked(getOpponent(), new Position(x, from.getY()))))
                 return false;
         }
 
         // moving pieces
         //king (in endOfTurn)
         //rook
-        view.putPiece(PieceType.ROOK, playerTurn, rookTo, toY);
-        view.removePiece(rookFrom, fromY);
-        board[toY][rookTo] = board[fromY][rookFrom];
-        board[fromY][rookFrom] = null;
-        ((CastlingPiece) board[toY][rookTo]).setHasMoved(true);
+        view.putPiece(PieceType.ROOK, playerTurn, rookTo, to.getY());
+        view.removePiece(rookFrom, from.getY());
+        board[to.getY()][rookTo] = board[from.getY()][rookFrom];
+        board[from.getY()][rookFrom] = null;
+        ((CastlingPiece) board[to.getY()][rookTo]).setHasMoved(true);
 
         return true;
 
     }
 
-    private boolean enPassant(int fromX, int fromY, int toX, int toY, Piece lastMove, Position posLastMove) {
+    private boolean enPassant(Position from, Position to) {
 
         //if true, en passant is possible
-        if (lastMove instanceof Pawn
-                && lastMove.getColor() == getOpponent()
-                && board[toY][toX] == null
-                && posLastMove.getY() == fromY
-                && ((CountingMovePiece) lastMove).getNbrOfMoves() == 1
-                && Math.abs(posLastMove.getX() - fromX) == 1
-                && board[fromY][fromX].canAttack(toX - fromX, toY - fromY)) {
+        if (board[lastMovePos.getY()][lastMovePos.getX()] instanceof Pawn
+                && board[lastMovePos.getY()][lastMovePos.getX()].getColor() == getOpponent()
+                && board[to.getY()][to.getX()] == null
+                && lastMovePos.getY() == from.getY()
+                && ((CountingMovePiece) board[lastMovePos.getY()][lastMovePos.getX()]).getNbrOfMoves() == 1
+                && Math.abs(lastMovePos.getX() - from.getX()) == 1
+                && board[from.getY()][from.getX()].canAttack(to.getX() - from.getX(), to.getY() - from.getY())) {
 
 
             //Simulation
 
             int relativeY = playerTurn == PlayerColor.WHITE ? -1 : 1;
 
-            board[toY][toX] = board[fromY][fromX];
-            board[fromY][fromX] = null;
-            Piece tmp = board[toY + relativeY][toX];
-            board[toY + relativeY][toX] = null;
+            board[to.getY()][to.getX()] = board[from.getY()][from.getX()];
+            board[from.getY()][from.getX()] = null;
+            Piece tmp = board[to.getY() + relativeY][to.getX()];
+            board[to.getY() + relativeY][to.getX()] = null;
 
             boolean check = isCellAttacked(getOpponent(), currentPlayerKingPos());
 
-            board[fromY][fromX] = board[toY][toX];
-            board[toY][toX] = null;
-            board[toY + relativeY][toX] = tmp;
+            board[from.getY()][from.getX()] = board[to.getY()][to.getX()];
+            board[to.getY()][to.getX()] = null;
+            board[to.getY() + relativeY][to.getX()] = tmp;
 
             if (check) return false;
 
-            view.removePiece(toX, toY + relativeY);
-            board[toY + relativeY][toX] = null;
+            view.removePiece(to.getX(), to.getY() + relativeY);
+            board[to.getY() + relativeY][to.getX()] = null;
             return true;
         }
         return false;
     }
 
-    @Override
-    public void newGame() {
+    private void promotion(Position to) {
+        Piece toPromote = view.askUser("Promotion disponible !", "Quelle pièce souhaitez-vous obtenir ?",
+                new Rook(playerTurn), new Knight(playerTurn), new Bishop(playerTurn), new Queen(playerTurn));
+        view.removePiece(to.getX(), to.getY());
+        view.putPiece(toPromote.getType(), playerTurn, to.getX(), to.getY());
+        board[to.getY()][to.getX()] = toPromote;
+    }
 
-        board = new Piece[8][8];
-        nbChecks = 0;
-        playerTurn = PlayerColor.WHITE;
+    private void endOfTurn(Position from, Position to) {
 
-        // Back Pieces
+        // Actually move piece
+        view.removePiece(to.getX(), to.getY());
+        view.putPiece(board[from.getY()][from.getX()].getType(), playerTurn, to.getX(), to.getY());
+        view.removePiece(from.getX(), from.getY());
 
-        for (int i = 0; i < 4; ++i) {
-            PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
+        board[to.getY()][to.getX()] = board[from.getY()][from.getX()];
+        board[from.getY()][from.getX()] = null;
 
-            board[7 * (i % 2)][7 * (i > 1 ? 1 : 0)] = new Rook(currentColor);
-            board[7 * (i % 2)][1 + 5 * (i > 1 ? 1 : 0)] = new Knight(currentColor);
-            board[7 * (i % 2)][2 + 3 * (i > 1 ? 1 : 0)] = new Bishop(currentColor);
-
-            if (i > 1) {
-                board[7 * (i % 2)][3] = new Queen(currentColor);
-            } else {
-                board[7 * (i % 2)][4] = new King(currentColor);
-
-                switch (currentColor) {
-                    case WHITE -> whiteKingPos = new Position(4, 0);
-                    case BLACK -> blackKingPos = new Position(4, 7);
-                }
-            }
+        if (to.getY() == (playerTurn == PlayerColor.WHITE ? 7 : 0) && board[to.getY()][to.getX()] instanceof Pawn) {
+            promotion(to);
         }
 
-        // Pawns
+        // Update last move
+        lastMovePos = to;
 
-        for (int i = 0; i < 16; ++i) {
-            PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
-            board[1 + 5 * (i % 2)][i % 8 - (i % 2) + i / 8] = new Pawn(currentColor);
+        // Update King position
+        if (from.equals(whiteKingPos)) whiteKingPos = to;
+        if (from.equals(blackKingPos)) blackKingPos = to;
+
+        // Check
+        if (isCellAttacked(playerTurn, opponentPlayerKingPos())) {
+            view.displayMessage("Check!");
         }
 
-        // Put pieces on view to be visible
+        // increment moves if needed
+        if (board[to.getY()][to.getX()] instanceof CastlingPiece)
+            ((CastlingPiece) board[to.getY()][to.getX()]).setHasMoved(true);
+        if (board[to.getY()][to.getX()] instanceof CountingMovePiece)
+            ((CountingMovePiece) board[to.getY()][to.getX()]).incrementNbrOfMoves();
 
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
-                if (board[line][column] != null) {
-                    view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
-                }
-            }
-        }
+        // Change turn
+        playerTurn = getOpponent();
     }
 }
