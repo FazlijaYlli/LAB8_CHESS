@@ -93,13 +93,13 @@ public class Controller implements ChessController {
 
                     while (!(x < 0 || x > 7 || y < 0 || y > 7) && board[y][x] == null) {
 
-                        x += directionX;
-                        y += directionY;
+                        x -= directionX;
+                        y -= directionY;
                     }
 
                     if (board[y][x] != null &&
                             board[y][x].canAttack(currentKingPos.getX() - x, currentKingPos.getY() - y)) {
-                        countered = y == toY && x == toX && board[fromY][fromX].canAttack(x, y);
+                        countered = y == toY && x == toX && board[fromY][fromX].canAttack(relativeX, relativeY);
 
                         if (!countered && board[y][x].isCollisionable()) {
                             // Blocking the attack
