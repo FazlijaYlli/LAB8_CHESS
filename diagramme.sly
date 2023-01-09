@@ -37,7 +37,7 @@
       <child>11279</child>
       <parent>11102</parent>
     </inheritance>
-    <association aggregation="NONE" direction="SECOND_TO_FIRST" id="14070" name="sont utilisée dans &gt;">
+    <association aggregation="NONE" direction="SECOND_TO_FIRST" id="14070" name="V sont utilisée dans">
       <role componentId="9801" name="" visibility="PRIVATE">
         <multiplicity>
           <min>0</min>
@@ -232,41 +232,41 @@
     <relationView color="-12566464" relationId="14070">
       <line>
         <point>
-          <x>601</x>
-          <y>211</y>
+          <x>61</x>
+          <y>226</y>
         </point>
         <point>
-          <x>1531</x>
-          <y>221</y>
+          <x>61</x>
+          <y>601</y>
         </point>
       </line>
       <labelAssociation>
-        <x>1004</x>
-        <y>193</y>
-        <w>122</w>
+        <x>68</x>
+        <y>564</y>
+        <w>123</w>
         <h>16</h>
       </labelAssociation>
       <roleAssociation>
-        <x>605</x>
-        <y>215</y>
+        <x>65</x>
+        <y>230</y>
         <w>0</w>
         <h>16</h>
       </roleAssociation>
       <roleAssociation>
-        <x>1495</x>
-        <y>225</y>
+        <x>65</x>
+        <y>579</y>
         <w>0</w>
         <h>16</h>
       </roleAssociation>
       <multipliciteAssociation>
-        <x>610</x>
-        <y>180</y>
+        <x>14</x>
+        <y>246</y>
         <w>31</w>
         <h>16</h>
       </multipliciteAssociation>
       <multipliciteAssociation>
-        <x>1505</x>
-        <y>190</y>
+        <x>39</x>
+        <y>580</y>
         <w>8</w>
         <h>16</h>
       </multipliciteAssociation>
@@ -274,12 +274,28 @@
     <relationView color="-12566464" relationId="14112">
       <line>
         <point>
-          <x>1741</x>
-          <y>211</y>
+          <x>241</x>
+          <y>601</y>
         </point>
         <point>
-          <x>1741</x>
-          <y>135</y>
+          <x>241</x>
+          <y>591</y>
+        </point>
+        <point>
+          <x>481</x>
+          <y>591</y>
+        </point>
+        <point>
+          <x>481</x>
+          <y>711</y>
+        </point>
+        <point>
+          <x>741</x>
+          <y>711</y>
+        </point>
+        <point>
+          <x>741</x>
+          <y>685</y>
         </point>
       </line>
     </relationView>
@@ -334,12 +350,12 @@
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
+          <x>211</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
-          <y>216</y>
+          <x>211</x>
+          <y>226</y>
         </point>
       </line>
     </relationView>
@@ -354,12 +370,12 @@
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
+          <x>211</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
-          <y>216</y>
+          <x>211</x>
+          <y>226</y>
         </point>
       </line>
     </relationView>
@@ -386,59 +402,59 @@
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
+          <x>211</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
-          <y>216</y>
+          <x>211</x>
+          <y>226</y>
         </point>
       </line>
     </relationView>
     <relationView color="-12566464" relationId="10705">
       <line>
         <point>
-          <x>1121</x>
-          <y>451</y>
+          <x>1011</x>
+          <y>341</y>
         </point>
         <point>
-          <x>1121</x>
+          <x>1011</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
+          <x>211</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
-          <y>216</y>
+          <x>211</x>
+          <y>226</y>
         </point>
       </line>
     </relationView>
     <relationView color="-12566464" relationId="10706">
       <line>
         <point>
-          <x>1341</x>
+          <x>1141</x>
           <y>451</y>
         </point>
         <point>
-          <x>1341</x>
+          <x>1141</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
+          <x>211</x>
           <y>271</y>
         </point>
         <point>
-          <x>451</x>
-          <y>216</y>
+          <x>211</x>
+          <y>226</y>
         </point>
       </line>
     </relationView>
     <componentView color="-2079" componentID="9801" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>290</x>
-        <y>10</y>
+        <x>50</x>
+        <y>20</y>
         <w>310</w>
         <h>205</h>
       </geometry>
@@ -469,7 +485,7 @@
     </componentView>
     <componentView color="-2079" componentID="9805" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>1250</x>
+        <x>1030</x>
         <y>450</y>
         <w>220</w>
         <h>85</h>
@@ -501,67 +517,67 @@
     </componentView>
     <componentView color="-2079" componentID="9809" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>1010</x>
-        <y>450</y>
+        <x>900</x>
+        <y>340</y>
         <w>220</w>
         <h>85</h>
       </geometry>
     </componentView>
     <componentView color="-2079" componentID="11073" enumValuesVisible="DEFAULT">
       <geometry>
-        <x>1170</x>
-        <y>10</y>
+        <x>790</x>
+        <y>40</y>
         <w>150</w>
         <h>149</h>
       </geometry>
     </componentView>
     <componentView color="-2079" componentID="11094" enumValuesVisible="DEFAULT">
       <geometry>
-        <x>1350</x>
-        <y>10</y>
+        <x>1010</x>
+        <y>40</y>
         <w>150</w>
         <h>89</h>
       </geometry>
     </componentView>
     <componentView color="-2079" componentID="11102" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>1530</x>
-        <y>20</y>
+        <x>530</x>
+        <y>570</y>
         <w>420</w>
         <h>114</h>
       </geometry>
     </componentView>
     <componentView color="-2079" componentID="11279" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>1530</x>
-        <y>210</y>
+        <x>50</x>
+        <y>600</y>
         <w>380</w>
         <h>325</h>
       </geometry>
     </componentView>
     <componentView color="-2079" componentID="11337" displayAttributes="true" displayDefault="true" displayMethods="true">
       <geometry>
-        <x>810</x>
-        <y>20</y>
+        <x>520</x>
+        <y>40</y>
         <w>180</w>
         <h>145</h>
       </geometry>
     </componentView>
     <note color="-2079" content="Le reste de la librairie de ChessController est dans le deuxième diagramme de classe ">
       <noteGeometry>
-        <x>1990</x>
-        <y>60</y>
+        <x>810</x>
+        <y>730</y>
         <w>140</w>
         <h>75</h>
       </noteGeometry>
       <noteLine color="-12566464" relationId="11102">
         <point>
-          <x>1991</x>
-          <y>61</y>
+          <x>811</x>
+          <y>731</y>
         </point>
         <point>
-          <x>1951</x>
-          <y>61</y>
+          <x>861</x>
+          <y>685</y>
         </point>
       </noteLine>
     </note>
