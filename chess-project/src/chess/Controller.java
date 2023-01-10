@@ -423,12 +423,12 @@ public class Controller implements ChessController {
 
                         ++i;
 
-                        // Stalemate by Pat's last case requires 2 bishops on opposite color cells
+                        // Stalemate by Pat's last case requires 2 bishops on same color cells
                         if (livingPieces[i - 1] instanceof Bishop) {
                             if (cell < 0) {
                                 cell = (line + column) % 2;
                             } else {
-                                if (cell == (line + column) % 2) {
+                                if (cell != (line + column) % 2) {
                                     ++i; //By putting i on 3, it can't be Pat
                                 }
                             }
