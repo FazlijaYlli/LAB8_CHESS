@@ -23,10 +23,11 @@ public class Position {
      *
      * @param x The x coordinate of the position
      * @param y The y coordinate of the position
+     * @throws RuntimeException when position is invalid since it's out of the Board
      */
     public Position(int x, int y) {
 
-        if (x < 0 || x > 7 || y < 0 || y > 7) {
+        if (x < 0 || x > Board.WIDTH - 1 || y < 0 || y > Board.HEIGHT - 1) {
             throw new RuntimeException("Invalid position (x : " + x + ", y : " + y + ")!");
         }
 

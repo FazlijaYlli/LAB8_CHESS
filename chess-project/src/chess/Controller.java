@@ -1,5 +1,6 @@
 package chess;
 
+import chess.engine.Board;
 import chess.engine.Position;
 import chess.engine.pieces.*;
 
@@ -36,13 +37,16 @@ public class Controller implements ChessController {
     @Override
     public void newGame() {
 
-        board = new Piece[8][8];
+        board = new Piece[Board.HEIGHT][Board.WIDTH];
         playerTurn = PlayerColor.WHITE;
         gameEnded = false;
         piecesCounter = 0;
 
         // Back Pieces
 
+        /**
+         * This part must be changed if you modify the board size
+         */
         for (int i = 0; i < 4; ++i) {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
 
@@ -69,16 +73,19 @@ public class Controller implements ChessController {
 
         // Pawns
 
-        for (int i = 0; i < 16; ++i) {
+        /**
+         * This part must be changed if you modify the board size
+         */
+        for (int i = 0; i < Board.WIDTH * 2; ++i) {
             PlayerColor currentColor = i % 2 == 0 ? PlayerColor.WHITE : PlayerColor.BLACK;
-            board[1 + 5 * (i % 2)][i % 8 - (i % 2) + i / 8] = new Pawn(currentColor);
+            board[1 + 5 * (i % 2)][i % Board.WIDTH - (i % 2) + i / Board.WIDTH] = new Pawn(currentColor);
             ++piecesCounter;
         }
 
         // Put pieces on view to be visible
 
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
+        for (int line = 0; line < Board.HEIGHT; ++line) {
+            for (int column = 0; column < Board.WIDTH; ++column) {
                 if (board[line][column] != null) {
                     view.putPiece(board[line][column].getType(), board[line][column].getColor(), column, line);
                 }
@@ -212,7 +219,7 @@ public class Controller implements ChessController {
 
             int x = from.getX() + directionX, y = from.getY() + directionY;
 
-            while (!(x < 0 || x > 7 || y < 0 || y > 7) && !(x == to.getX() && y == to.getY())) {
+            while (!(x < 0 || x > Board.WIDTH - 1 || y < 0 || y > Board.HEIGHT - 1) && !(x == to.getX() && y == to.getY())) {
 
                 // Check every cell until destination
 
@@ -238,8 +245,8 @@ public class Controller implements ChessController {
 
         // Altough not "optimized" for a standard chess game,
         // it allows the creation of new pieces without any restraint
-        for (int line = 0; line < 8; ++line) {
-            for (int column = 0; column < 8; ++column) {
+        for (int line = 0; line < Board.HEIGHT; ++line) {
+            for (int column = 0; column < Board.WIDTH; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == by &&
                         board[line][column].canAttack(cell.getX() - column, cell.getY() - line)
                         && !collision(new Position(column, line), cell)) {
@@ -253,6 +260,7 @@ public class Controller implements ChessController {
 
     /**
      * Check conditions to "Castle" and do it if check pass
+     * Warning : This function doesn't work anymore if you change the board size!
      *
      * @param from Position of the start piece
      * @param to   Position of the end piece
@@ -376,7 +384,8 @@ public class Controller implements ChessController {
         board[from.getY()][from.getX()] = null;
 
         // Promotion
-        if (board[to.getY()][to.getX()] instanceof Pawn && to.getY() == (playerTurn == PlayerColor.WHITE ? 7 : 0)) {
+        if (board[to.getY()][to.getX()] instanceof Pawn
+                && to.getY() == (playerTurn == PlayerColor.WHITE ? Board.HEIGHT - 1 : 0)) {
             promotion(to);
         }
 
@@ -415,8 +424,8 @@ public class Controller implements ChessController {
 
             int i = 0;
             int cell = -1;
-            for (int line = 0; line < 8; ++line) {
-                for (int column = 0; column < 8; ++column) {
+            for (int line = 0; line < Board.HEIGHT; ++line) {
+                for (int column = 0; column < Board.WIDTH; ++column) {
                     if (board[line][column] != null && !(board[line][column] instanceof King)) {
 
                         livingPieces[i] = board[line][column];
@@ -455,16 +464,16 @@ public class Controller implements ChessController {
         // Stalemate : Moves available ?
         // There is no verification for Castling since it's an impossible move when there's a possibility of stalemate
         boolean moveFound = false;
-        for (int line = 0; line < 8; ++line) {
+        for (int line = 0; line < Board.HEIGHT; ++line) {
             if (stalemateByPat) break;
 
-            for (int column = 0; column < 8; ++column) {
+            for (int column = 0; column < Board.WIDTH; ++column) {
                 if (board[line][column] != null && board[line][column].getColor() == playerTurn) {
 
                     // Simulation
 
-                    for (int toY = 0; toY < 8; ++toY) {
-                        for (int toX = 0; toX < 8; ++toX) {
+                    for (int toY = 0; toY < Board.HEIGHT; ++toY) {
+                        for (int toX = 0; toX < Board.WIDTH; ++toX) {
 
                             // Not on self
                             if (toY == line && toX == column) continue;
